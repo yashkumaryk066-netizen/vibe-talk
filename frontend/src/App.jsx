@@ -10,133 +10,164 @@ const Login = ({ onSuccess }) => {
   const [formData, setFormData] = useState({ username: '', password: '', email: '' });
   const [loading, setLoading] = useState(false);
 
+  // Toggle between Login and Signup with a smooth state transition
+  const toggleMode = () => {
+    setIsSignup(!isSignup);
+    setFormData({ username: '', password: '', email: '' });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (isSignup) {
         await api.signup(formData);
-        toast.success("Account created! Logging in...");
+        toast.success("Welcome to the Vibe! 🚀");
+        // Auto-login after signup
         const res = await api.login(formData.username, formData.password);
         if (res.data.status === 'logged in') onSuccess();
       } else {
         const res = await api.login(formData.username, formData.password);
         if (res.data.status === 'logged in') {
-          toast.success("Welcome back! ✨");
+          toast.success("Vibes loaded. ✨");
           onSuccess();
         }
       }
     } catch (err) {
       console.error(err);
-      toast.error(isSignup ? "Username taken or invalid." : "Invalid credentials.");
+      toast.error(isSignup ? "Username already taken." : "Wrong credentials.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleClick = () => {
-    // In a real sellable app, the client must provide their own Google Cloud Client ID.
-    // We provide the standard placeholder behavior here.
-    toast("To enable Real Google Auth, add Client ID in settings.", { icon: 'ℹ️' });
-  };
-
   return (
-    <div className="screen h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] relative overflow-hidden">
+    <div className="screen h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0f0c29]">
+      {/* 🌌 Premium Animated Background */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/30 rounded-full blur-[100px] animate-pulse delay-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-blue-600/30 rounded-full blur-[100px] animate-pulse delay-1000"></div>
 
-      {/* Dynamic Background Elements */}
-      <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] animate-bounce"></div>
+      {/* 💎 Glass Card Container */}
+      <div className="z-10 w-full max-w-md p-1">
+        <div className="glass bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-8 md:p-10 relative overflow-hidden group">
 
-      <div className="glass w-full max-w-sm p-8 z-10 animate-up shadow-2xl border border-white/10">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
-            VibeTalk.
-          </h1>
-          <p className="text-white/50 text-sm">The Premium Voice Social Network</p>
-        </div>
+          {/* Shine Effect */}
+          <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 group-hover:animate-shine"></div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Username</label>
-            <div className="relative">
-              <User size={18} className="absolute left-3 top-3.5 text-white/30" />
-              <input
-                className="input-field pl-10 bg-black/20 focus:bg-black/40 border-white/10"
-                placeholder="Enter username"
-                value={formData.username}
-                onChange={e => setFormData({ ...formData, username: e.target.value })}
-                required
-              />
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-600 mb-4 shadow-lg shadow-purple-500/30 animate-float">
+              <Mic size={32} className="text-white" />
             </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-1 font-outfit">VibeTalk.</h1>
+            <p className="text-white/40 text-sm font-light tracking-wide">
+              {isSignup ? "Create your identity." : "Welcome back, legend."}
+            </p>
           </div>
 
-          {isSignup && (
-            <div className="animate-in fade-in slide-in-from-top-2">
-              <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Email</label>
+          {/* 📝 Form Section */}
+          <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+
+            {/* Username Input */}
+            <div className="group/input">
+              <label className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2 block ml-1 transition-colors group-focus-within/input:text-blue-400">Username</label>
               <div className="relative">
-                <Globe size={18} className="absolute left-3 top-3.5 text-white/30" />
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User size={18} className="text-white/30 group-focus-within/input:text-blue-400 transition-colors" />
+                </div>
                 <input
-                  type="email"
-                  className="input-field pl-10 bg-black/20 focus:bg-black/40 border-white/10"
-                  placeholder="Enter email"
-                  value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  type="text"
+                  className="w-full bg-black/20 border border-white/10 text-white text-sm rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 block w-full pl-11 p-3.5 transition-all outline-none placeholder-white/20 hover:bg-black/30"
+                  placeholder="vibe_master"
                   required
+                  value={formData.username}
+                  onChange={e => setFormData({ ...formData, username: e.target.value })}
                 />
               </div>
             </div>
-          )}
 
-          <div>
-            <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Password</label>
-            <div className="relative">
-              <div className="absolute left-3 top-3.5 text-white/30">🔒</div>
-              <input
-                type="password"
-                className="input-field pl-10 bg-black/20 focus:bg-black/40 border-white/10"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
+            {/* Email Input (Signup Only) */}
+            {isSignup && (
+              <div className="group/input animate-in fade-in slide-in-from-top-4 duration-300">
+                <label className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2 block ml-1 transition-colors group-focus-within/input:text-purple-400">Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Globe size={18} className="text-white/30 group-focus-within/input:text-purple-400 transition-colors" />
+                  </div>
+                  <input
+                    type="email"
+                    className="w-full bg-black/20 border border-white/10 text-white text-sm rounded-xl focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 block w-full pl-11 p-3.5 transition-all outline-none placeholder-white/20 hover:bg-black/30"
+                    placeholder="you@example.com"
+                    required
+                    value={formData.email}
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Password Input */}
+            <div className="group/input">
+              <label className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2 block ml-1 transition-colors group-focus-within/input:text-pink-400">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Flame size={18} className="text-white/30 group-focus-within/input:text-pink-400 transition-colors" />
+                </div>
+                <input
+                  type="password"
+                  className="w-full bg-black/20 border border-white/10 text-white text-sm rounded-xl focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500 block w-full pl-11 p-3.5 transition-all outline-none placeholder-white/20 hover:bg-black/30"
+                  placeholder="••••••••"
+                  required
+                  value={formData.password}
+                  onChange={e => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            disabled={loading}
-            className="btn w-full py-3 mt-4 text-sm uppercase tracking-wide shadow-lg shadow-blue-500/20"
-          >
-            {loading ? "Processing..." : (isSignup ? "Create Account" : "Sign In")}
-          </button>
-        </form>
-
-        <div className="mt-6">
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink mx-4 text-xs text-white/30">OR CONTINUE WITH</span>
-            <div className="flex-grow border-t border-white/10"></div>
-          </div>
-
-          <button
-            onClick={handleGoogleClick}
-            className="w-full bg-white text-black font-semibold py-3 rounded-xl flex items-center justify-center gap-3 mt-2 hover:bg-gray-100 transition"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="G" />
-            <span>Google</span>
-          </button>
-        </div>
-
-        <div className="text-center mt-6">
-          <p className="text-sm text-white/60">
-            {isSignup ? "Already have an account?" : "No account yet?"}{" "}
+            {/* Action Button */}
             <button
-              onClick={() => setIsSignup(!isSignup)}
-              className="text-primary hover:text-white font-bold transition ml-1"
+              disabled={loading}
+              className="w-full group relative flex justify-center py-3.5 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-lg shadow-purple-500/30 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2 overflow-hidden"
             >
-              {isSignup ? "Sign In" : "Sign Up"}
+              {/* Button Shine Overlay */}
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine transition-all"></div>
+
+              <span className="relative flex items-center gap-2">
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {isSignup ? "Create Account" : "Sign In"} <ArrowLeft size={16} className="rotate-180" />
+                  </>
+                )}
+              </span>
             </button>
-          </p>
+          </form>
+
+          {/* Toggle Link */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-white/40">
+              {isSignup ? "Already inside?" : "New to VibeTalk?"}{" "}
+              <button
+                onClick={toggleMode}
+                className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 hover:text-white transition-all ml-1 border-b border-transparent hover:border-purple-400"
+              >
+                {isSignup ? "Login Here" : "Join Now"}
+              </button>
+            </p>
+          </div>
+
         </div>
+
+        {/* Footer Branding */}
+        <p className="text-center text-[10px] text-white/20 uppercase tracking-[0.2em] mt-8 font-light">
+          Secure • Encrypted • Private
+        </p>
+
       </div>
     </div>
   );
