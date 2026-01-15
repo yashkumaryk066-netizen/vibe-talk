@@ -1,0 +1,139 @@
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.db.models import Q
+from .models import Profile, FriendRequest, ChatRoom, Message, Block, Report
+from .serializers import UserSerializer, ProfileSerializer, FriendRequestSerializer, ChatRoomSerializer, MessageSerializer
+
+class AuthViewSet(viewsets.ViewSet):
+    @action(detail=False, methods=['post'])
+    def signup(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email')
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username taken'}, status=400)
+        user = User.objects.create_user(username=username, password=password, email=email)
+        Profile.objects.create(user=user, name=username) # Default profile
+        return Response({'status': 'created'}, status=201)
+
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            return Response({'status': 'logged in', 'user_id': user.id})
+        return Response({'error': 'Invalid credentials'}, status=400)
+    
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        if request.user.is_authenticated:
+            try:
+                profile = Profile.objects.get(user=request.user)
+                return Response(ProfileSerializer(profile).data)
+            except Profile.DoesNotExist:
+                 return Response({'error': 'Profile not found'}, status=404)
+        return Response({'error': 'Not logged in'}, status=403)
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset
+        
+        if user.is_authenticated:
+            # Exclude users who blocked me or I blocked
+            blocked_ids = Block.objects.filter(blocker=user).values_list('blocked', flat=True)
+            blocked_by_ids = Block.objects.filter(blocked=user).values_list('blocker', flat=True)
+            queryset = queryset.exclude(user__in=blocked_ids).exclude(user__in=blocked_by_ids)
+
+        learn = self.request.query_params.get('learn')
+        if learn:
+            return queryset.filter(learn_language__icontains=learn)
+        return queryset
+
+class FriendRequestViewSet(viewsets.ModelViewSet):
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+
+    def get_queryset(self):
+        # Return requests where user is sender or receiver
+        user = self.request.user
+        if user.is_authenticated:
+            return self.queryset.filter(Q(from_user=user) | Q(to_user=user))
+        return self.queryset.none()
+
+    def perform_create(self, serializer):
+        serializer.save(from_user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        freq = self.get_object()
+        if freq.to_user != request.user:
+            return Response({'error': 'Not your request'}, status=403)
+        
+        freq.status = 'accepted'
+        freq.save()
+        
+        # Ensure distinct user ordering to prevent duplicate rooms (user1 < user2)
+        u1, u2 = (freq.from_user, freq.to_user) if freq.from_user.id < freq.to_user.id else (freq.to_user, freq.from_user)
+        
+        ChatRoom.objects.get_or_create(user1=u1, user2=u2)
+        return Response({'status': 'accepted'})
+
+class ChatRoomViewSet(viewsets.ModelViewSet):
+    queryset = ChatRoom.objects.all()
+    serializer_class = ChatRoomSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return self.queryset.filter(Q(user1=user) | Q(user2=user))
+        return self.queryset.none()
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    
+    def get_queryset(self):
+        room_id = self.request.query_params.get('room')
+        if room_id:
+            return self.queryset.filter(room__id=room_id).order_by('created_at')
+        return self.queryset.none() # Don't return all messages by default
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
+class BlockViewSet(viewsets.ModelViewSet):
+    queryset = Block.objects.all()
+    # Serializer needed, defining inline for speed or should use dedicated file. 
+    # Let's assume generic model serializer or basic create.
+    # To keep it clean, I'll rely on a standard CreateModelMixin behavior if I had the serializer.
+    # But wait, I didn't verify BlockSerializer exists. I should create it or use a simple one here.
+    # Actually, let's just use a simple serializer class here or import it if I add it to serializers.py.
+    # I will modify serializers.py in next step.
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import BlockSerializer
+        return BlockSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(blocker=self.request.user)
+
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = Report.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import ReportSerializer
+        return ReportSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(reporter=self.request.user)

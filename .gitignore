@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+db.sqlite3
+.DS_Store
+
+# React
+node_modules/
+dist/
+.env.local
+.DS_Store
+package-lock.json
