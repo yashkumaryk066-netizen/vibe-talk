@@ -128,6 +128,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://vibe-talk-earn-yashamishra.vercel.app',
     'https://*.onrender.com', 
     'https://*.vercel.app',
     'http://localhost:5173'
