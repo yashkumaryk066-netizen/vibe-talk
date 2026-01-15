@@ -1,4 +1,4 @@
-# 🎙️ VibeTalk: The Future of Gen Z Dating 🚀
+# 🎙️ Vibe Talk Earn: The Future of Gen Z Dating & Earning 🚀
 
 <div align="center">
   <img src="https://img.shields.io/badge/Vibe-Check%20Passed-pink?style=for-the-badge" />
