@@ -73,7 +73,7 @@ const Login = ({ onSuccess }) => {
             </div>
           ) : (
             <>
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-6 h-6" alt="G" />
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-6 h-6" style={{ width: '24px', height: '24px' }} alt="G" />
               <span>Continue with Google</span>
             </>
           )}

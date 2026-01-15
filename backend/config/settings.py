@@ -126,8 +126,20 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # CORS & CSRF Settings for Production
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Must be False when Credentials = True
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    'https://vibe-talk-earn-yashamishra.vercel.app',
+    'https://vibe-talk-dubc.vercel.app',
+    'http://localhost:5173',
+]
+
+# Allow all Vercel and Render subdomains via Regex
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://.*\.vercel\.app$',
+    r'^https://.*\.onrender\.com$',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://vibe-talk-earn-yashamishra.vercel.app',
