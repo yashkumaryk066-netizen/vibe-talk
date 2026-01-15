@@ -7,32 +7,24 @@ import * as api from './api';
 
 const Login = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
+  const [showFakeGoogle, setShowFakeGoogle] = useState(false);
 
-  // Simulate Google Auth Popup for Demo/Dev
-  // In production, use @react-oauth/google or Firebase Auth
-  const handleGoogleLogin = async () => {
+  const handleGoogleClick = () => {
+    // Show our premium custom modal instead of cheap window.prompt
+    setShowFakeGoogle(true);
+  };
+
+  const completeLogin = async (email) => {
+    setShowFakeGoogle(false);
     setLoading(true);
 
-    // 1. Simulate Popup delay
+    // Simulate Network Delay for realism
     setTimeout(async () => {
-      // Mock Google Data (in real app, this comes from SDK)
-      // We will mock a user interaction to simulate "Selecting an Account"
-      const mockGoogleUser = {
-        google_id: "gid_" + Math.floor(Math.random() * 10000000), // Simulate unique ID
-        email: "genz_vibe_" + Math.floor(Math.random() * 1000) + "@gmail.com",
-        name: "Vibe User " + Math.floor(Math.random() * 100),
-        photo: "https://lh3.googleusercontent.com/a/default-user"
-      };
-
-      // OR better: Ask user for email in a nice "Google" looking prompt to make it testable with specific accounts
-      const email = prompt("Simulating Google Login:\nEnter Email to continue:", "user@gmail.com");
-      if (!email) { setLoading(false); return; }
-
       const googlePayload = {
-        google_id: btoa(email), // Deterministic ID based on email for testing recall
+        google_id: btoa(email),
         email: email,
         name: email.split('@')[0],
-        photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}` // Auto gen avatar
+        photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
       };
 
       try {
@@ -45,7 +37,7 @@ const Login = ({ onSuccess }) => {
       } finally {
         setLoading(false);
       }
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -62,7 +54,7 @@ const Login = ({ onSuccess }) => {
         <p className="text-white/60 mb-12 text-lg font-light tracking-wide">Connect deeply. Speak freely.</p>
 
         <button
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleClick}
           disabled={loading}
           className="relative group bg-white text-black px-8 py-4 rounded-full font-bold text-lg flex items-center gap-3 transition-transform hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
         >
@@ -84,6 +76,66 @@ const Login = ({ onSuccess }) => {
 
         <p className="mt-8 text-xs text-white/30 uppercase tracking-widest">Premium Encrypted Connection</p>
       </div>
+
+      {/* Premium Fake Google Logic Modal */}
+      {showFakeGoogle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in zoom-in duration-300">
+          <div className="bg-[#202124] text-white p-8 rounded-2xl w-full max-w-sm shadow-2xl border border-gray-700 relative">
+            <button
+              onClick={() => setShowFakeGoogle(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex flex-col items-center mb-6">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-10 h-10 mb-4" />
+              <h2 className="text-xl font-medium">Sign in with Google</h2>
+              <p className="text-sm text-gray-400">Choose an account to continue</p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Account 1 */}
+              <div
+                onClick={() => completeLogin('demo_user@gmail.com')}
+                className="flex items-center gap-3 p-3 rounded-full hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/10 transition"
+              >
+                <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm font-bold">D</div>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium">Demo User</div>
+                  <div className="text-xs text-gray-400">demo_user@gmail.com</div>
+                </div>
+              </div>
+
+              {/* Account 2 */}
+              <div
+                onClick={() => completeLogin('vibe_king@gmail.com')}
+                className="flex items-center gap-3 p-3 rounded-full hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/10 transition"
+              >
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">V</div>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium">Vibe King</div>
+                  <div className="text-xs text-gray-400">vibe_king@gmail.com</div>
+                </div>
+              </div>
+
+              {/* Add Account */}
+              <div
+                className="flex items-center gap-3 p-3 rounded-full hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/10 transition"
+                onClick={() => {
+                  const email = prompt("Enter custom email (Developer Mode):", "custom@gmail.com");
+                  if (email) completeLogin(email);
+                }}
+              >
+                <div className="w-8 h-8 rounded-full border border-gray-500 flex items-center justify-center">
+                  <User size={14} className="text-gray-400" />
+                </div>
+                <div className="text-sm font-medium">Use another account</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
