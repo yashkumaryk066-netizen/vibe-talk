@@ -435,20 +435,27 @@ const Discover = ({ user, userData }) => {
       </div>
 
       <div className="swipe-container">
-        <div key={p.user} className="swipe-card animate-up" onClick={nextPhoto} onDoubleClick={() => handleSwipe(p.user, 'like')}>
+        <div key={p.user} className="swipe-card animate-up group" onClick={nextPhoto} onDoubleClick={() => handleSwipe(p.user, 'like')}>
+          {/* Neon Border Glow */}
+          <div className="absolute inset-0 rounded-[30px] border-2 border-transparent bg-gradient-to-b from-blue-500/50 to-purple-600/50 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
+
           {/* Photo Area */}
-          <div className="w-full h-full bg-gray-800 flex items-center justify-center text-6xl font-bold text-white/10 uppercase relative">
+          <div className="w-full h-full bg-gray-900 flex items-center justify-center text-6xl font-bold text-white/10 uppercase relative overflow-hidden rounded-[20px]">
             {currentImage ? (
-              <img src={currentImage} className="w-full h-full object-cover" />
+              <img src={currentImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             ) : (
-              p.name[0]
+              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
+                <span className="text-8xl bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                  {p.name[0]}
+                </span>
+              </div>
             )}
 
             {/* Pagination Dots */}
             {allPhotos.length > 1 && (
-              <div className="absolute top-2 left-0 w-full flex justify-center gap-1 px-4">
+              <div className="absolute top-4 left-0 w-full flex justify-center gap-1.5 px-4 z-20">
                 {allPhotos.map((_, i) => (
-                  <div key={i} className={`h-1 flex-1 rounded-full ${i === photoIndex ? 'bg-white' : 'bg-white/30'}`} />
+                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === photoIndex ? 'w-6 bg-white shadow-lg shadow-white/50' : 'w-1.5 bg-white/30'}`} />
                 ))}
               </div>
             )}
@@ -819,14 +826,15 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="glass nav-bar fixed bottom-0 w-full flex justify-around p-3 z-50 rounded-t-3xl border-t border-white/10 bg-black/80 backdrop-blur-lg">
+  return (
+    <nav className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl p-4 z-50 flex justify-between items-center ring-1 ring-white/10">
       <NavItem to="/discover" icon={Search} label="Discover" />
       <NavItem to="/rooms" icon={Globe} label="Rooms" />
+      <div className="w-[1px] h-8 bg-white/10"></div>
       <NavItem to="/chats" icon={MessageCircle} label="Chats" />
       <NavItem to="/matches" icon={Heart} label="Matches" />
       <NavItem to="/profile" icon={User} label="Profile" />
     </nav>
-
   );
 }
 
