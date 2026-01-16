@@ -14,6 +14,39 @@ const parseJwt = (token) => {
   }
 };
 
+// --- 🌟 Premium Data Content (No more broken images) ---
+const REAL_NAMES = [
+  "Aisha_Vibes", "Rahul_Cool", "Sneha_Official", "Vikram_Beats", "Priya_Travels",
+  "Arjun_Fitness", "Zara_Fashion", "Kabir_Music", "Ananya_Art", "Rohan_Tech",
+  "Sanya_Dance", "Aditya_Gamer", "Nisha_Foodie", "Karan_Life", "Meera_Yoga"
+];
+
+const REAL_AVATARS = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&h=150&fit=crop",
+  "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=150&h=150&fit=crop"
+];
+
+const VIBE_IMAGES = [
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80", // Party/Event
+  "https://images.unsplash.com/photo-1514525253440-b393452eeb25?auto=format&fit=crop&w=800&q=80", // Club/Night
+  "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80", // Party Crowd
+  "https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&w=800&q=80", // Guy Portrait
+  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80", // Girl Model
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", // Portrait
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80", // Guy Portrait
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80", // Girl Model
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80", // Girl Camera
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80"  // Guy Hoodie
+];
+
 const Login = ({ onSuccess }) => {
   const [isSignup, setIsSignup] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '', email: '' });
@@ -192,8 +225,8 @@ const Login = ({ onSuccess }) => {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22px" height="22px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" /><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" /><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" /><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" /></svg>
                 Continue with Google
               </button>
-              {/* The Real Google Button - Positioned behind with clip-path to hide visual but keep functional */}
-              <div ref={googleBtnRef} className="absolute inset-0 z-10 overflow-hidden w-full h-full transform scale-x-125" style={{ clipPath: 'inset(0 0 0 0)' }}></div>
+              {/* The Real Google Button - Invisible but clickable (Opacity 0.01) to show custom design underneath */}
+              <div ref={googleBtnRef} className="absolute inset-0 z-10 overflow-hidden w-full h-full" style={{ opacity: 0.01 }}></div>
             </div>
           </form>
 
@@ -289,7 +322,7 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
             <div className="relative group cursor-pointer w-32 h-32">
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
               <div className="relative w-full h-full rounded-full p-1 bg-black">
-                <img src={profilePicPreview || `https://api.dicebear.com/7.x/avataaars/svg?seed=${form.name}`} className="w-full h-full rounded-full object-cover" />
+                <img src={profilePicPreview || (form.name ? REAL_AVATARS[form.name.length % REAL_AVATARS.length] : REAL_AVATARS[0])} className="w-full h-full rounded-full object-cover" />
               </div>
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
                 <Camera size={24} className="text-white drop-shadow-lg" />
@@ -397,13 +430,15 @@ const InstaNav = ({ activeTab, onTabChange }) => (
   </div>
 );
 
-// --- 🚀 Massive Content Generators ---
-const generateMockReels = (count = 100) => {
+
+
+const generateMockReels = (count = 50) => {
   return Array.from({ length: count }, (_, i) => ({
     id: `mock-reel-${i}`,
-    url: `https://source.unsplash.com/random/400x800?concert,party,fashion,neon,sig=${i}`, // varied images
+    url: VIBE_IMAGES[i % VIBE_IMAGES.length],
     likes: Math.floor(Math.random() * 50000) + 1000,
-    user: `user_${Math.floor(Math.random() * 999)}`,
+    user: REAL_NAMES[i % REAL_NAMES.length],
+    avatar: REAL_AVATARS[i % REAL_AVATARS.length],
     desc: ["Vibing hard! ✨", "Check this vibe 🔥", "Night life 🌙", "Outfit check 👗", "Travel goals ✈️"][Math.floor(Math.random() * 5)]
   }));
 };
@@ -413,26 +448,44 @@ const Feed = ({ onMessage }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Fetch real profiles
+    // 1. Fetch real profiles (if any exist in backend)
     api.getProfiles().then(res => {
-      // 2. Generate 50 fake posts to simulate infinite feed
+      // 2. Generate PREMIUM fake posts to supplement
       const fakePosts = Array.from({ length: 50 }, (_, i) => ({
         id: `fake-${i}`,
-        username: `vibe_user_${i}`,
-        location: ['Delhi', 'Mumbai', 'NYC', 'London', 'Dubai'][i % 5],
-        profile_pic: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`,
-        image: `https://source.unsplash.com/random/800x800?lifestyle,travel,sig=${i}`,
-        bio: '#vibe #trending #life',
+        username: REAL_NAMES[i % REAL_NAMES.length],
+        location: ['Mumbai, India', 'New York, USA', 'London, UK', 'Dubai, UAE', 'Goa, India'][i % 5],
+        profile_pic: REAL_AVATARS[i % REAL_AVATARS.length], // REAL FACES
+        image: VIBE_IMAGES[i % VIBE_IMAGES.length], // REAL VIBES
+        bio: ['Just chillin 🌊', 'Living my best life ✨', 'Music is life 🎵', 'Dream big 🚀', 'Good vibes only ✌️'][i % 5],
         age: 20 + (i % 10),
-        likes: Math.floor(Math.random() * 5000)
+        likes: Math.floor(Math.random() * 5000) + 100
       }));
-      // Merge real and fake
-      setPosts([...res.data, ...fakePosts]);
+
+      // 3. SANITIZE backend data: If backend data has generic names or likely broken images, REPLACE them with premium data
+      const sanitizedBackendPosts = (res.data || []).map((p, i) => ({
+        ...p,
+        // Override Generic Names - AGGRESSIVE: Replace anything starting with vibe_ or user, OR just random generic vibe names
+        username: (p.username && (p.username.startsWith('user') || p.username.startsWith('vibe_'))) ? REAL_NAMES[(i + 10) % REAL_NAMES.length] : p.username,
+        // Override Likely Broken/Generic Images
+        image: (!p.image || p.image.includes('dicebear') || p.image.includes('source.unsplash')) ? VIBE_IMAGES[(i + 5) % VIBE_IMAGES.length] : p.image,
+        // Override Generic Avatars
+        profile_pic: p.profile_pic || REAL_AVATARS[(i + 3) % REAL_AVATARS.length]
+      }));
+
+      // Merge sanitized real and fake, shuffling slightly or putting real first
+      setPosts([...sanitizedBackendPosts, ...fakePosts]);
       setLoading(false);
     }).catch(err => {
-      // Offline Fallback
+      console.log("Using pure localized premium data");
       const fakePostsOnly = Array.from({ length: 50 }, (_, i) => ({
-        id: `fake-${i}`, username: `user_${i}`, image: `https://source.unsplash.com/random/800x800?sig=${i}`, bio: 'Vibing'
+        id: `fake-${i}`,
+        username: REAL_NAMES[i % REAL_NAMES.length],
+        location: 'Vibe City',
+        profile_pic: REAL_AVATARS[i % REAL_AVATARS.length],
+        image: VIBE_IMAGES[i % VIBE_IMAGES.length],
+        bio: 'Vibe check ✅',
+        likes: 999
       }));
       setPosts(fakePostsOnly);
       setLoading(false);
@@ -465,9 +518,9 @@ const Feed = ({ onMessage }) => {
         {[...Array(15)].map((_, i) => (
           <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer group">
             <div className="story-ring w-16 h-16 p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-full group-hover:scale-105 transition">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=story${i}`} className="w-full h-full rounded-full bg-black border-2 border-black object-cover" />
+              <img src={REAL_AVATARS[i % REAL_AVATARS.length]} className="w-full h-full rounded-full bg-black border-2 border-black object-cover" />
             </div>
-            <span className="text-xs opacity-70 group-hover:opacity-100">User_{i}</span>
+            <span className="text-xs opacity-70 group-hover:opacity-100 truncate w-16 text-center">{REAL_NAMES[i % REAL_NAMES.length]}</span>
           </div>
         ))}
       </div>
@@ -683,7 +736,7 @@ const ProfileView = ({ user, onLogout }) => (
 
     <div className="flex items-center gap-6 mb-6">
       <div className="story-ring w-24 h-24 p-1">
-        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full rounded-full bg-gray-800 object-cover" alt="Yash A Mishra User Profile" />
+        <img src={user.profile_pic || user.google_pic_url || (user.username ? REAL_AVATARS[user.username.length % REAL_AVATARS.length] : REAL_AVATARS[0])} className="w-full h-full rounded-full bg-gray-800 object-cover" alt="User Profile" />
       </div>
 
       <div className="flex gap-6 text-center">
@@ -731,7 +784,15 @@ const Matches = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.getMatches().then(res => setMatches(res.data)).finally(() => setLoading(false));
+    api.getMatches().then(res => {
+      // Augment matches with premium data if missing
+      const augmentedMatches = (res.data || []).map((m, i) => ({
+        ...m,
+        profile_pic: m.profile_pic || REAL_AVATARS[i % REAL_AVATARS.length],
+        name: m.name || REAL_NAMES[i % REAL_NAMES.length]
+      }));
+      setMatches(augmentedMatches);
+    }).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -796,7 +857,18 @@ const PublicRooms = () => {
       <div className="grid grid-cols-1 gap-4 mt-2">
         {rooms.map((room, i) => (
           <div key={room.id} onClick={() => navigate(`/public-chat/${room.id}`, { state: { room } })}
-            className="group relative overflow-hidden bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition cursor-pointer active:scale-95">
+            className="group relative overflow-hidden bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition cursor-pointer active:scale-[0.98]">
+            {/* Visual Gang / Avatar Pile */}
+            <div className="absolute right-4 top-4 flex -space-x-3">
+              {[...Array(3)].map((_, j) => (
+                <div key={j} className="w-8 h-8 rounded-full border-2 border-[#121212] overflow-hidden">
+                  <img src={REAL_AVATARS[(i + j) % REAL_AVATARS.length]} className="w-full h-full object-cover" />
+                </div>
+              ))}
+              <div className="w-8 h-8 rounded-full border-2 border-[#121212] bg-gray-800 flex items-center justify-center text-[10px] font-bold">
+                +{room.members}
+              </div>
+            </div>
 
             {/* Glowing Backdrop */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/30 transition"></div>

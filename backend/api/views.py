@@ -43,7 +43,7 @@ class AuthViewSet(viewsets.ViewSet):
         logout(request)
         return Response({'status': 'logged out'})
     
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], authentication_classes=[], permission_classes=[permissions.AllowAny])
     def google_auth(self, request):
         """
         Handle Google Login/Signup securely by verifying ID Token.
