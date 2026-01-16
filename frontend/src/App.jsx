@@ -381,7 +381,23 @@ const InstaNav = ({ activeTab, onTabChange }) => (
   </div>
 );
 
-const Feed = () => {
+const Feed = ({ onMessage }) => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // We treat 'Profiles' as 'Posts' for this MVP
+    api.getProfiles().then(res => {
+      setPosts(res.data);
+      setLoading(false);
+    }).catch(err => {
+      console.error("Feed error:", err);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <div className="screen center-content"><div className="loader"></div></div>;
+
   return (
     <div className="screen pb-20 overflow-y-auto">
       <div className="flex justify-between items-center p-4 sticky top-0 bg-black/90 backdrop-blur z-20">
@@ -391,9 +407,9 @@ const Feed = () => {
 
       {/* Stories */}
       <div className="story-bar">
-        {['Your Story', 'Ankush', 'Priya', 'Rahul', 'Sneha', 'Vikram'].map((name, i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <div className="story-ring">
+        {['Your Story', ...posts.slice(0, 5).map(p => p.name ? p.name.split(' ')[0] : 'Vibe')].map((name, i) => (
+          <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0">
+            <div className="story-ring w-16 h-16">
               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} className="story-img" />
             </div>
             <span className="text-xs opacity-80">{name}</span>
@@ -401,29 +417,40 @@ const Feed = () => {
         ))}
       </div>
 
-      {/* Posts */}
-      {[1, 2, 3].map(i => (
-        <div key={i} className="mb-6 border-b border-white/10 pb-4">
+      {/* Real Posts from Users */}
+      {posts.map((p, i) => (
+        <div key={p.id || i} className="mb-6 border-b border-white/10 pb-4 animate-up" style={{ animationDelay: `${i * 0.1}s` }}>
           <div className="flex items-center gap-3 p-3">
             <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Post${i}`} className="w-full h-full" />
+              <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full object-cover" />
             </div>
-            <span className="font-bold text-sm">VibeUser_{i}</span>
+            <div>
+              <span className="font-bold text-sm block">{p.username}</span>
+              <span className="text-xs opacity-50">{p.location || 'Vibe City'}</span>
+            </div>
             <MoreVertical size={16} className="ml-auto opacity-50" />
           </div>
 
-          <div className="w-full aspect-square bg-gray-900 overflow-hidden">
-            <img src={`https://source.unsplash.com/random/800x800?party,neon,${i}`} className="w-full h-full object-cover"
+          <div className="w-full aspect-square bg-gray-900 overflow-hidden relative">
+            <img src={`https://source.unsplash.com/random/800x800?party,neon,${p.username}`} className="w-full h-full object-cover"
               onError={(e) => e.target.src = 'https://media.istockphoto.com/id/1129638608/photo/technological-abstract-background.jpg?s=612x612&w=0&k=20&c=nO8E7i8Y7h6w6f5s7D6g8Hz7J9k0L1M2N3O4P5Q6R7S'} />
+            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-2 py-1 rounded text-xs font-bold">
+              {p.age} years old
+            </div>
           </div>
 
           <div className="p-3">
             <div className="flex gap-4 mb-2">
-              <Heart size={24} />
-              <MessageCircle size={24} />
-              <Send size={24} />
+              <Heart size={28} className="hover:text-red-500 transition cursor-pointer" />
+              <div onClick={() => onMessage(p.user)} className="cursor-pointer hover:scale-110 transition">
+                <MessageCircle size={28} />
+              </div>
+              <Send size={28} className="hover:text-blue-500 transition cursor-pointer" />
             </div>
-            <p className="text-sm"><span className="font-bold">VibeUser_{i}</span> Late night vibes! ✨ #vibetalk #chill</p>
+            <p className="text-sm">
+              <span className="font-bold mr-2">{p.username}</span>
+              {p.bio || "Just vibing on VibeTalk! ✨ #chill #newapp"}
+            </p>
           </div>
         </div>
       ))}
@@ -431,7 +458,7 @@ const Feed = () => {
   );
 };
 
-const Reels = () => {
+const Reels = ({ onMessage }) => {
   return (
     <div className="reels-container">
       {[1, 2, 3, 4].map(i => (
@@ -464,12 +491,22 @@ const Reels = () => {
   );
 };
 
-const MessagesList = ({ navigate }) => {
-  // Simulating Chat List
+const MessagesList = ({ navigate, activeUser }) => {
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch real matches/chats
+    api.getMatches().then(res => {
+      setChats(res.data);
+      setLoading(false);
+    }).catch(e => setLoading(false));
+  }, []);
+
   return (
     <div className="screen pb-20 pt-14">
       <div className="fixed top-0 w-full p-4 glass z-10 flex justify-between items-center">
-        <h1 className="font-bold text-xl flex items-center gap-1">vibe_user <span className="text-xs opacity-50">▼</span></h1>
+        <h1 className="font-bold text-xl flex items-center gap-1">{activeUser?.username} <span className="text-xs opacity-50">▼</span></h1>
         <Edit3 size={24} />
       </div>
 
@@ -479,19 +516,28 @@ const MessagesList = ({ navigate }) => {
         </div>
       </div>
 
-      <div className="flex flex-col">
-        {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="chat-item" onClick={() => navigate(`/chats`)}>
-            <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Chat${i}`} className="w-full h-full rounded-full bg-gray-800" />
+      <div className="flex flex-col overflow-y-auto pb-20">
+        {loading ? <div className="p-4 text-center opacity-50">Loading chats...</div> :
+          chats.length === 0 ? (
+            <div className="p-8 text-center opacity-50 flex flex-col items-center">
+              <MessageCircle size={48} className="mb-2" />
+              <p>No messages yet.</p>
+              <p className="text-xs">Start a chat from the Home Feed!</p>
             </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-sm">Crush_{i}</h4>
-              <p className="text-xs opacity-60">Sent you a reel • 2h</p>
-            </div>
-            <camera size={20} className="opacity-50" />
-          </div>
-        ))}
+          ) :
+            chats.map(p => (
+              <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.user}`)}>
+                {/* Navigating to /chats/:id where :id is the USER ID, handled by MainApp/Router logic */}
+                <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
+                  <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full rounded-full bg-gray-800 object-cover" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm block">{p.name || p.username}</h4>
+                  <p className="text-xs opacity-60">Tap to chat • Now</p>
+                </div>
+                <camera size={20} className="opacity-50" />
+              </div>
+            ))}
       </div>
     </div>
   );
@@ -583,18 +629,31 @@ const ProfileView = ({ user, onLogout }) => (
 );
 
 // --- Main App Shell ---
+// --- Main App Shell ---
 const MainApp = ({ user, userData, onLogout }) => {
   const [activeTab, setActiveTab] = useState('feed');
   const navigate = useNavigate();
 
+  const handleMessage = async (targetUserId) => {
+    try {
+      // Direct messaging: Create/Get chat room then navigate
+      await api.post('/chatrooms/start_chat/', { target_user_id: targetUserId });
+      navigate(`/chats/${targetUserId}`);
+    } catch (e) {
+      console.log("Chat start fallback", e);
+      // Even if API fails (maybe offline?), try navigating
+      navigate(`/chats/${targetUserId}`);
+    }
+  };
+
   const renderTab = () => {
     switch (activeTab) {
-      case 'feed': return <Feed />;
+      case 'feed': return <Feed onMessage={handleMessage} />;
       case 'search': return <Discover user={user} userData={userData} />;
-      case 'reels': return <Reels />;
-      case 'messages': return <MessagesList navigate={navigate} />;
+      case 'reels': return <Reels onMessage={handleMessage} />;
+      case 'messages': return <MessagesList navigate={navigate} activeUser={user} />;
       case 'profile': return <ProfileView user={user} onLogout={onLogout} />;
-      default: return <Feed />;
+      default: return <Feed onMessage={handleMessage} />;
     }
   };
 

@@ -228,6 +228,22 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             return self.queryset.filter(Q(user1=user) | Q(user2=user))
         return self.queryset.none()
 
+    @action(detail=False, methods=['post'])
+    def start_chat(self, request):
+        target_id = request.data.get('target_user_id')
+        if not target_id:
+            return Response({'error': 'Target User ID required'}, status=400)
+        
+        try:
+            target_user = User.objects.get(id=target_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+            
+        # Check existing room
+        u1, u2 = (request.user, target_user) if request.user.id < target_user.id else (target_user, request.user)
+        room, created = ChatRoom.objects.get_or_create(user1=u1, user2=u2)
+        
+        return Response(ChatRoomSerializer(room).data)
     @action(detail=True, methods=['post'])
     def send_message(self, request, pk=None):
         room = self.get_object()
