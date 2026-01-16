@@ -126,19 +126,19 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # CORS & CSRF Settings for Production
-CORS_ALLOW_ALL_ORIGINS = False  # Must be False when Credentials = True
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily Open for Netlify Transition
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    'https://vibe-talk-earn-yashamishra.vercel.app',
+# CORS_ALLOWED_ORIGINS = [
+#     'https://vibe-talk-earn-yashamishra.vercel.app',
+#     'http://localhost:5173',
+# ]
 
-    'http://localhost:5173',
-]
-
-# Allow all Vercel and Render subdomains via Regex
+# Allow all Vercel, Render AND Netlify subdomains via Regex
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r'^https://.*\.vercel\.app$',
     r'^https://.*\.onrender\.com$',
+    r'^https://.*\.netlify\.app$',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
