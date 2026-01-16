@@ -616,18 +616,28 @@ const ProfileView = ({ user, onLogout }) => (
 
     <div className="flex items-center gap-6 mb-6">
       <div className="story-ring w-24 h-24 p-1">
-        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full rounded-full bg-gray-800" />
+        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full rounded-full bg-gray-800 object-cover" alt="Yash A Mishra User Profile" />
       </div>
+
       <div className="flex gap-6 text-center">
-        <div><span className="font-bold text-lg block">154</span><span className="text-xs opacity-60">Posts</span></div>
-        <div><span className="font-bold text-lg block">2.4M</span><span className="text-xs opacity-60">Followers</span></div>
-        <div><span className="font-bold text-lg block">12</span><span className="text-xs opacity-60">Following</span></div>
+        <div><span className="block font-bold text-lg">12</span><span className="text-xs opacity-50">Posts</span></div>
+        <div><span className="block font-bold text-lg">2.5k</span><span className="text-xs opacity-50">Followers</span></div>
+        <div><span className="block font-bold text-lg">340</span><span className="text-xs opacity-50">Following</span></div>
       </div>
     </div>
 
+    {/* Description / SEO Bio */}
+    {/* Description / SEO Bio */}
     <div className="mb-6">
-      <p className="font-bold">Vibe Creator</p>
-      <p className="opacity-80 text-sm">Building the future of social. 🚀<br />Artist | Dreamer | Vibe</p>
+      <h2 className="font-bold">{user.name || "VibeTalk User"}</h2>
+      <p className="opacity-70 text-sm mb-2">{user.bio || "Passionate about connecting with the world."}</p>
+
+      {/* SEO Credit - Hidden from easy view but present for crawlers/users */}
+      <div className="bg-white/5 p-3 rounded-lg border border-white/5 mt-4">
+        <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Developed By</p>
+        <p className="text-xs text-blue-400 font-bold">Yash A Mishra (Rangra Developer)</p>
+        <a href="https://vibe-talk-earn-yashamishra.vercel.app/" className="text-[10px] text-white/30 hover:text-white transition">yashamishra.com • ysmai.com</a>
+      </div>
     </div>
 
     <div className="flex gap-2 mb-8">
@@ -643,7 +653,7 @@ const ProfileView = ({ user, onLogout }) => (
         </div>
       ))}
     </div>
-  </div>
+  </div >
 );
 
 // --- Main App Shell ---
