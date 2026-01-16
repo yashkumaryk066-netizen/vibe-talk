@@ -221,38 +221,55 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
     min_age_pref: userData.min_age_pref || 18,
     max_age_pref: userData.max_age_pref || 50,
     interests: userData.interests || '',
-    voiceButton: null
   });
 
+  const [profilePicPreview, setProfilePicPreview] = useState(userData.profile_pic || userData.google_pic_url);
+  const [profilePicFile, setProfilePicFile] = useState(null);
+  const [galleryPreviews, setGalleryPreviews] = useState(userData.images ? userData.images.map(i => i.image) : []);
+  const [loading, setLoading] = useState(false);
 
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePicFile(file);
+      setProfilePicPreview(URL.createObjectURL(file));
+    }
+  };
 
-  // Handle form submission with file upload support
+  const handleGalleryUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    setGalleryPreviews(prev => [...prev, URL.createObjectURL(file)]);
+    toast.loading("Uploading vibe...", { id: 'upload-gal' });
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/profile/${userData.id}/upload_gallery/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
+      });
+      toast.success("Added to gallery!", { id: 'upload-gal' });
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload failed", { id: 'upload-gal' });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const data = new FormData();
-      data.append('name', form.name);
-      data.append('bio', form.bio);
-      data.append('gender', form.gender);
-      data.append('age', form.age);
-      data.append('location', form.location);
-      data.append('interested_in', form.interested_in);
-      data.append('min_age_pref', form.min_age_pref);
-      data.append('max_age_pref', form.max_age_pref);
-      data.append('interests', form.interests);
-
-      // Handle Files
-      // Note: form.voiceButton is storing the file object for voice as per previous code
-      if (form.voiceButton instanceof File) {
-        data.append('voice_bio', form.voiceButton);
-      }
-      // If we add profile pic upload later, append here too
+      Object.keys(form).forEach(key => data.append(key, form[key]));
+      if (profilePicFile) data.append('profile_pic', profilePicFile);
 
       const res = await api.updateMe(data);
       onUpdate(res.data);
       onClose();
-      toast.success("Vibe Updated! ✨");
+      toast.success("Vibe Updated! 🔥");
     } catch (err) {
       console.error(err);
       toast.error("Update failed.");
@@ -262,93 +279,94 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm">
-      <div className="glass card w-full max-w-lg relative overflow-y-auto max-h-[85vh] p-8 border-t border-white/20 shadow-2xl animate-up">
-        <X className="absolute top-6 right-6 cursor-pointer opacity-70 hover:opacity-100 transition" onClick={onClose} />
-        <h2 className="mb-6 text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Edit Vibes</h2>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-nav-in">
+      <div className="bg-[#121212] w-full max-w-lg h-auto max-h-[90vh] rounded-3xl border border-white/10 shadow-2xl overflow-y-auto custom-scrollbar relative">
+        <div className="sticky top-0 bg-[#121212]/90 backdrop-blur z-20 flex justify-between items-center p-5 border-b border-white/5">
+          <h2 className="text-xl font-black italic bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">EDIT VIBE</h2>
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition"><X size={24} /></button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative group cursor-pointer w-32 h-32">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
+              <div className="relative w-full h-full rounded-full p-1 bg-black">
+                <img src={profilePicPreview || `https://api.dicebear.com/7.x/avataaars/svg?seed=${form.name}`} className="w-full h-full rounded-full object-cover" />
+              </div>
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+                <Camera size={24} className="text-white drop-shadow-lg" />
+                <input type="file" className="hidden" accept="image/*" onChange={handleProfilePicChange} />
+              </label>
+              <div className="absolute bottom-1 right-1 bg-cyan-500 p-1.5 rounded-full border-4 border-black z-20 shadow-lg">
+                <Plus size={16} strokeWidth={4} color="black" />
+              </div>
+            </div>
+            <p className="text-xs text-center text-white/40 uppercase tracking-widest font-bold">Tap Avatar to Change</p>
+          </div>
+
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-xs font-black text-white/70 uppercase tracking-wider flex items-center gap-2"><Image size={14} className="text-purple-500" /> My Vibe Gallery</label>
+              <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded badge-gradient">Add 5+ Photos</span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+              <label className="w-24 h-32 flex-shrink-0 snap-start bg-black/40 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-cyan-400/50 hover:bg-cyan-400/5 transition group">
+                <div className="p-2 bg-white/5 rounded-full group-hover:scale-110 transition"><Upload size={20} className="text-cyan-400" /></div>
+                <span className="text-[10px] font-bold text-white/40 group-hover:text-cyan-400">UPLOAD</span>
+                <input type="file" className="hidden" accept="image/*" onChange={handleGalleryUpload} />
+              </label>
+              {galleryPreviews.map((src, i) => (
+                <div key={i} className="w-24 h-32 flex-shrink-0 snap-start bg-black rounded-xl overflow-hidden relative border border-white/10 group shadow-lg">
+                  <img src={src} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition px-2 pb-2 flex items-end justify-center">
+                    <button type="button" className="text-xs text-red-500 font-bold hover:underline">Remove</button>
+                  </div>
+                </div>
+              ))}
+              {[...Array(Math.max(0, 4 - galleryPreviews.length))].map((_, i) => (
+                <div key={`empty-${i}`} className="w-24 h-32 flex-shrink-0 snap-start bg-white/5 rounded-xl border border-white/5 flex items-center justify-center">
+                  <Plus size={16} className="text-white/10" />
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Display Name</label>
-              <input className="input-field bg-white/5 border-white/10 focus:bg-black/40" placeholder="Display Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <div className="group">
+              <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">DISPLAY NAME</label>
+              <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="input-field w-full bg-white/5 border-white/10 focus:border-cyan-500 transition-colors rounded-xl p-3" placeholder="Your Vibe Name" />
             </div>
-
-            <div>
-              <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Bio</label>
-              <textarea className="input-field bg-white/5 border-white/10 focus:bg-black/40 h-24 resize-none" placeholder="Short intro about your vibe..." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} />
+            <div className="group">
+              <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">BIO / STATUS</label>
+              <textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} className="input-field w-full h-24 resize-none bg-white/5 border-white/10 focus:border-purple-500 transition-colors rounded-xl p-3" placeholder="Tell the world your vibe... ✨" />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Gender</label>
-              <select className="input-field bg-white/5 border-white/10" value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Age</label>
-              <input type="number" className="input-field bg-white/5 border-white/10" placeholder="Age" value={form.age} onChange={e => setForm({ ...form, age: parseInt(e.target.value) || 18 })} />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Location / Country</label>
-            <select className="input-field bg-white/5 border-white/10" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })}>
-              <option value="India 🇮🇳">India 🇮🇳</option>
-              <option value="USA 🇺🇸">USA 🇺🇸</option>
-              <option value="UK 🇬🇧">UK 🇬🇧</option>
-              <option value="Canada 🇨🇦">Canada 🇨🇦</option>
-              <option value="Japan 🇯🇵">Japan 🇯🇵</option>
-              <option value="Korea 🇰🇷">Korea 🇰🇷</option>
-              <option value="Global 🌍">Global 🌍</option>
-            </select>
-          </div>
-
-          <div className="p-4 rounded-xl border border-white/10 bg-white/5 mt-2">
-            <span className="text-xs uppercase font-bold tracking-wider opacity-60 mb-4 block">Discovery Settings</span>
-
-            <div className="mb-4">
-              <label className="text-xs opacity-50 mb-1 block">Show Me</label>
-              <select className="input-field bg-black/40 border-white/10" value={form.interested_in} onChange={e => setForm({ ...form, interested_in: e.target.value })}>
-                <option value="Male">Men</option>
-                <option value="Female">Women</option>
-                <option value="Everyone">Everyone</option>
-              </select>
-            </div>
-
-            <div className="flex gap-4 items-center">
-              <div className="flex-1">
-                <label className="text-xs opacity-50 mb-1 block">Min Age</label>
-                <input type="number" className="input-field bg-black/40 border-white/10 text-center" value={form.min_age_pref} min="18" onChange={e => setForm({ ...form, min_age_pref: parseInt(e.target.value) })} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">GENDER</label>
+                <div className="relative">
+                  <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className="input-field w-full bg-white/5 border-white/10 rounded-xl p-3 appearance-none">
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                  </select>
+                  <div className="absolute right-3 top-3.5 pointer-events-none opacity-50"><ChevronDown size={14} /></div>
+                </div>
               </div>
-              <span className="opacity-30">-</span>
-              <div className="flex-1">
-                <label className="text-xs opacity-50 mb-1 block">Max Age</label>
-                <input type="number" className="input-field bg-black/40 border-white/10 text-center" value={form.max_age_pref} max="100" onChange={e => setForm({ ...form, max_age_pref: parseInt(e.target.value) })} />
+              <div>
+                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">AGE</label>
+                <input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} className="input-field w-full bg-white/5 border-white/10 rounded-xl p-3" />
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Voice Intro</label>
-            <div className="file-input-wrapper flex flex-col items-center justify-center gap-2 hover:border-primary transition group">
-              <Mic size={24} className="opacity-50 group-hover:text-primary group-hover:opacity-100 transition" />
-              <span className="text-sm opacity-70 group-hover:text-white">{form.voiceButton ? "Voice File Selected ✅" : (userData.voice_bio ? "Change Voice Intro 🔄" : "Upload Voice Intro 🎙️")}</span>
-              <input type="file" accept="audio/*" onChange={e => setForm({ ...form, voiceButton: e.target.files[0] })} />
-            </div>
+          <div className="sticky bottom-0 bg-[#121212] pt-4 pb-2 border-t border-white/5">
+            <button disabled={loading} className="w-full py-4 rounded-xl font-bold text-lg bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 text-white shadow-[0_0_20px_rgba(0,210,255,0.3)] hover:shadow-[0_0_30px_rgba(0,210,255,0.5)] active:scale-[0.98] transition-all relative overflow-hidden group">
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {loading ? <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" /> : <Save size={20} />}
+                {loading ? "Updating..." : "Save Profile"}
+              </span>
+            </button>
           </div>
-
-          <div>
-            <label className="text-xs uppercase font-bold tracking-wider opacity-60 mb-2 block">Interests</label>
-            <input className="input-field bg-white/5 border-white/10" placeholder="Gaming, Anime, Travel..." value={form.interests} onChange={e => setForm({ ...form, interests: e.target.value })} />
-          </div>
-
-          <button className="btn mt-4 shadow-lg shadow-blue-500/25">Save Vibe</button>
         </form>
       </div>
     </div>
