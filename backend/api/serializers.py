@@ -24,6 +24,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_profile_pic(self, obj):
         if obj.profile_pic:
             try:
+                # Fix for seeded data where 'http' urls are stored in ImageField
+                if str(obj.profile_pic).startswith('http'):
+                    return str(obj.profile_pic)
                 return obj.profile_pic.url
             except:
                 pass

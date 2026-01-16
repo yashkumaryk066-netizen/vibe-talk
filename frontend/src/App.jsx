@@ -478,12 +478,12 @@ const Feed = ({ onMessage }) => {
 
 const Reels = ({ onMessage }) => {
   return (
-    <div className="reels-container">
+    <div className="reels-container snap-y scrollbar-hide">
       {[1, 2, 3, 4].map(i => (
-        <div key={i} className="reel-item">
-          <div className="absolute inset-0 bg-gray-800 animate-pulse">
+        <div key={i} className="reel-item snap-start h-screen w-full relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-purple-900/10 to-black animate-pulse">
             {/* Placeholder for actual video */}
-            <img src={`https://source.unsplash.com/random/400x800?dance,music,${i}`} className="reel-video opacity-60" />
+            <img src={`https://source.unsplash.com/random/400x800?concert,neon,${i}`} className="reel-video w-full h-full object-cover opacity-90" />
           </div>
 
           <div className="reel-actions">
