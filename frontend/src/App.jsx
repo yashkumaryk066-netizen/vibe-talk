@@ -1148,83 +1148,115 @@ const AppLayout = ({ user, userData, setUserData, onLogout }) => {
     }
   }, [userData]);
 
-  const location = useLocation();
-  const hideHeader = ['/'];
+  const MainApp = ({ user, userData, onLogout, onUpdate }) => {
+    const [activeTab, setActiveTab] = useState('feed');
+    const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
 
-  return (
-    <>
-      {/* Insta-Style Top Header */}
-      {!hideHeader.includes(location.pathname) && user && (
-        <div className="fixed top-0 w-full z-40 px-4 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-white/5">
-          <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">VibeTalk.</h1>
-          <div className="flex gap-5">
-            <Link to="/activity"><div className="relative"><Flame size={24} strokeWidth={2} /> <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span></div></Link>
-            <Link to="/chats"><MessageCircle size={24} strokeWidth={2} /></Link>
+    // Handle "Deep Links" or initial state from props if needed
+    // For now, default to 'feed'
+
+    const renderContent = () => {
+      switch (activeTab) {
+        case 'feed': return <Feed onMessage={(u) => setActiveTab('messages')} />;
+        case 'search': return <Discover user={user} userData={userData} />; // Using Discover as Search/Explore
+        case 'reels': return <Reels onMessage={(u) => setActiveTab('messages')} />;
+        case 'messages': return <MessagesList activeUser={user} navigate={setActiveTab} />;
+        case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
+        default: return <Feed />;
+      }
+    };
+
+    return (
+      <div className="bg-black text-white min-h-screen relative font-sans">
+        {/* Main Content Area */}
+        <div className="pb-16">
+          {renderContent()}
+        </div>
+
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
+          <div onClick={() => setActiveTab('feed')} className={`cursor-pointer transition ${activeTab === 'feed' ? 'scale-110 text-white' : 'text-white/50'}`}>
+            {activeTab === 'feed' ? <Heart size={28} className="fill-white" /> : <Heart size={28} />}
+          </div>
+
+          <div onClick={() => setActiveTab('search')} className={`cursor-pointer transition ${activeTab === 'search' ? 'scale-110 text-white' : 'text-white/50'}`}>
+            <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
+          </div>
+
+          <div onClick={() => setActiveTab('reels')} className={`cursor-pointer transition ${activeTab === 'reels' ? 'scale-110' : 'opacity-80'}`}>
+            <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px] rounded-lg">
+              <div className="bg-black rounded-[6px] p-1">
+                <div className="w-5 h-5 border-2 border-white rounded-[2px] flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div onClick={() => setActiveTab('messages')} className={`cursor-pointer transition ${activeTab === 'messages' ? 'scale-110 text-white' : 'text-white/50'}`}>
+            <div className="relative">
+              <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
+              <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black animate-pulse"></div>
+            </div>
+          </div>
+
+          <div onClick={() => setActiveTab('profile')} className={`cursor-pointer transition ${activeTab === 'profile' ? 'scale-110 border-white' : 'border-transparent text-white/50'}`}>
+            <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${activeTab === 'profile' ? 'border-white' : 'border-white/50'}`}>
+              <img src={userData?.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full object-cover" />
+            </div>
           </div>
         </div>
-      )}
 
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
-        {/* Global Background Effects if needed */}
+        {/* Onboarding Modal */}
+        {showOnboarding && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
+            <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
+          </div>
+        )}
       </div>
-      <Routes>
-        <Route path="/discover" element={<Discover user={user} userData={userData} />} />
-        <Route path="/rooms" element={<PublicRooms />} />
-        <Route path="/public-chat/:id" element={<ChatRoom user={user} isPublic={true} />} />
-        <Route path="/matches" element={<Matches />} />
-        <Route path="/chats" element={<ChatsList user={user} />} />
-        <Route path="/chats/:id" element={<ChatRoom user={user} isPublic={false} />} />
-        <Route path="/profile" element={<ProfilePage user={user} userData={userData} onLogout={onLogout} onUpdate={setUserData} />} />
-        <Route path="*" element={<Discover user={user} />} />
-      </Routes>
-      <Navbar />
-      {showOnboarding && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
-          {/* Reuse EditProfileModal but maybe with valid close logic or force it? 
-                         For now reusing EditProfileModal is fine, but we need to pass onClose. 
-                      */}
-          <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={setUserData} />
-        </div>
-      )}
-    </>
-  );
-};
-
-function App() {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { checkAuth(); }, []);
-
-  const checkAuth = async () => {
-    try {
-      const res = await api.getMe();
-      setUser({ username: res.data.username });
-      setUserData(res.data);
-    } catch (err) { setUser(null); } finally { setLoading(false); }
+    );
   };
 
-  if (loading) return <div className="screen center-content"><div className="loader">Loading...</div></div>;
+  const App = () => {
+    const [user, setUser] = useState(null);
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  if (user) {
+    useEffect(() => { checkAuth(); }, []);
+
+    const checkAuth = async () => {
+      try {
+        const res = await api.getMe();
+        setUser({ username: res.data.username });
+        setUserData(res.data);
+      } catch (err) { setUser(null); } finally { setLoading(false); }
+    };
+
+    if (loading) return <div className="screen center-content"><div className="loader">Loading...</div></div>;
+
+    if (user) {
+      return (
+        <Router>
+          <MainApp
+            user={user}
+            userData={userData}
+            onLogout={() => { setUser(null); setUserData(null); }}
+            onUpdate={setUserData}
+          />
+        </Router>
+      );
+    }
+
     return (
-      <Router>
-        <MainApp user={user} userData={userData} onLogout={() => { setUser(null); setUserData(null); }} />
-      </Router>
+      <>
+        <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
+        <Router>
+          <Routes>
+            <Route path="*" element={<Login onSuccess={checkAuth} />} />
+          </Routes>
+        </Router>
+      </>
     );
-  }
+  };
 
-  return (
-    <>
-      <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
-      <Router>
-        <Routes>
-          <Route path="*" element={<Login onSuccess={checkAuth} />} />
-        </Routes>
-      </Router>
-    </>
-  );
-}
-
-export default App;
+  export default App;
