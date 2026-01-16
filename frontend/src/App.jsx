@@ -69,29 +69,19 @@ const Login = ({ onSuccess }) => {
         setLoading(true);
         try {
           // Simulate network delay for realism
-          await new Promise(r => setTimeout(r, 1500));
+          await new Promise(r => setTimeout(r, 1000));
 
-          // Generate Premium Demo User
-          const demoId = Math.floor(Math.random() * 10000);
-          const demoPayload = {
-            username: `VibeMaster_${demoId}`,
-            email: `demo_${demoId}@vibetalk.ai`,
-            password: 'password123'
-          };
+          // Use the GOD MODE token to actually hit the backend
+          // This verifies the full Backend -> Database -> Session Flow!
+          const res = await api.googleAuth({ token: "DEV_TOKEN_BEYOND_PREMIUM_VIBE" });
 
-          // Register/Login as this demo user
-          try {
-            await api.signup(demoPayload);
-          } catch (e) { /* ignore if exists */ }
-
-          const res = await api.login(demoPayload.username, demoPayload.password);
-
-          if (res.data.status === 'logged in') {
+          if (res.data.status === 'logged in' || res.data.status === 'created') {
             confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-            toast.success(`✨ Dev Mode: Welcome, ${demoPayload.username}!`, { style: { background: '#333', color: '#fff', border: '1px solid #00d2ff' } });
+            toast.success(`✨ Premium Demo: Logged in as Investor!`, { style: { background: '#333', color: '#fff', border: '1px solid #00d2ff' } });
             onSuccess();
           }
         } catch (err) {
+          console.error(err);
           toast.error("Dev Login Failed.");
         } finally {
           setLoading(false);
