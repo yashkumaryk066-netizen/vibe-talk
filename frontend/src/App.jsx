@@ -399,17 +399,44 @@ const InstaNav = ({ activeTab, onTabChange }) => (
   </div>
 );
 
+// --- 🚀 Massive Content Generators ---
+const generateMockReels = (count = 100) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `mock-reel-${i}`,
+    url: `https://source.unsplash.com/random/400x800?concert,party,fashion,neon,sig=${i}`, // varied images
+    likes: Math.floor(Math.random() * 50000) + 1000,
+    user: `user_${Math.floor(Math.random() * 999)}`,
+    desc: ["Vibing hard! ✨", "Check this vibe 🔥", "Night life 🌙", "Outfit check 👗", "Travel goals ✈️"][Math.floor(Math.random() * 5)]
+  }));
+};
+
 const Feed = ({ onMessage }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // We treat 'Profiles' as 'Posts' for this MVP
+    // 1. Fetch real profiles
     api.getProfiles().then(res => {
-      setPosts(res.data);
+      // 2. Generate 50 fake posts to simulate infinite feed
+      const fakePosts = Array.from({ length: 50 }, (_, i) => ({
+        id: `fake-${i}`,
+        username: `vibe_user_${i}`,
+        location: ['Delhi', 'Mumbai', 'NYC', 'London', 'Dubai'][i % 5],
+        profile_pic: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`,
+        image: `https://source.unsplash.com/random/800x800?lifestyle,travel,sig=${i}`,
+        bio: '#vibe #trending #life',
+        age: 20 + (i % 10),
+        likes: Math.floor(Math.random() * 5000)
+      }));
+      // Merge real and fake
+      setPosts([...res.data, ...fakePosts]);
       setLoading(false);
     }).catch(err => {
-      console.error("Feed error:", err);
+      // Offline Fallback
+      const fakePostsOnly = Array.from({ length: 50 }, (_, i) => ({
+        id: `fake-${i}`, username: `user_${i}`, image: `https://source.unsplash.com/random/800x800?sig=${i}`, bio: 'Vibing'
+      }));
+      setPosts(fakePostsOnly);
       setLoading(false);
     });
   }, []);
@@ -417,92 +444,134 @@ const Feed = ({ onMessage }) => {
   if (loading) return <div className="screen center-content"><div className="loader"></div></div>;
 
   return (
-    <div className="screen pb-20 overflow-y-auto">
-      <div className="flex justify-between items-center p-4 sticky top-0 bg-black/90 backdrop-blur z-20">
-        <h1 className="font-outfit text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">VibeTalk</h1>
-        <Heart size={24} />
+    <div className="screen pb-20 overflow-y-auto bg-black">
+      <div className="flex justify-between items-center p-4 sticky top-0 bg-black/90 backdrop-blur z-20 border-b border-white/5">
+        <h1 className="font-outfit text-2xl font-black italic tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">VibeTalk</h1>
+        <div className="flex gap-4">
+          <Heart size={24} />
+          <div className="relative">
+            <MessageCircle size={24} />
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
       </div>
 
-      {/* Stories */}
-      <div className="story-bar">
-        {['Your Story', ...posts.slice(0, 5).map(p => p.name ? p.name.split(' ')[0] : 'Vibe')].map((name, i) => (
-          <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0">
-            <div className="story-ring w-16 h-16">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} className="story-img" />
+      {/* Stories - Horizontal Scroll */}
+      <div className="flex gap-4 overflow-x-auto px-4 py-4 scrollbar-hide border-b border-white/5 mb-2">
+        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+          <div className="story-ring w-16 h-16 border-2 border-white/30 border-dashed rounded-full flex items-center justify-center relative bg-white/5">
+            <Plus size={24} className="text-blue-500" />
+          </div>
+          <span className="text-xs font-bold">Add Vibe</span>
+        </div>
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0 cursor-pointer group">
+            <div className="story-ring w-16 h-16 p-[2px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-full group-hover:scale-105 transition">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=story${i}`} className="w-full h-full rounded-full bg-black border-2 border-black object-cover" />
             </div>
-            <span className="text-xs opacity-80">{name}</span>
+            <span className="text-xs opacity-70 group-hover:opacity-100">User_{i}</span>
           </div>
         ))}
       </div>
 
-      {/* Real Posts from Users */}
-      {posts.map((p, i) => (
-        <div key={p.id || i} className="mb-6 border-b border-white/10 pb-4 animate-up" style={{ animationDelay: `${i * 0.1}s` }}>
-          <div className="flex items-center gap-3 p-3">
-            <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
-              <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <span className="font-bold text-sm block">{p.username}</span>
-              <span className="text-xs opacity-50">{p.location || 'Vibe City'}</span>
-            </div>
-            <MoreVertical size={16} className="ml-auto opacity-50" />
-          </div>
-
-          <div className="w-full aspect-square bg-gray-900 overflow-hidden relative">
-            <img src={`https://source.unsplash.com/random/800x800?party,neon,${p.username}`} className="w-full h-full object-cover"
-              onError={(e) => e.target.src = 'https://media.istockphoto.com/id/1129638608/photo/technological-abstract-background.jpg?s=612x612&w=0&k=20&c=nO8E7i8Y7h6w6f5s7D6g8Hz7J9k0L1M2N3O4P5Q6R7S'} />
-            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur px-2 py-1 rounded text-xs font-bold">
-              {p.age} years old
-            </div>
-          </div>
-
-          <div className="p-3">
-            <div className="flex gap-4 mb-2">
-              <Heart size={28} className="hover:text-red-500 transition cursor-pointer" />
-              <div onClick={() => onMessage(p.user)} className="cursor-pointer hover:scale-110 transition">
-                <MessageCircle size={28} />
+      {/* Posts Feed */}
+      <div className="flex flex-col pb-4">
+        {posts.map((p, i) => (
+          <div key={p.id || i} className="bg-black mb-4 border-b border-white/10 pb-4 animate-up">
+            {/* Header */}
+            <div className="flex items-center gap-3 p-3">
+              <div className="w-9 h-9 rounded-full bg-gray-800 p-[1px] bg-gradient-to-br from-blue-500 to-purple-500">
+                <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full rounded-full border border-black object-cover" />
               </div>
-              <Send size={28} className="hover:text-blue-500 transition cursor-pointer" />
+              <div>
+                <span className="font-bold text-sm block hover:text-blue-400 cursor-pointer">{p.username}</span>
+                <span className="text-[10px] opacity-50 block">{p.location || 'Unknown Location'}</span>
+              </div>
+              <MoreVertical size={16} className="ml-auto opacity-50 cursor-pointer" />
             </div>
-            <p className="text-sm">
-              <span className="font-bold mr-2">{p.username}</span>
-              {p.bio || "Just vibing on VibeTalk! ✨ #chill #newapp"}
-            </p>
+
+            {/* Image */}
+            <div className="w-full aspect-square bg-gray-900 overflow-hidden relative group">
+              <img src={p.image || `https://source.unsplash.com/random/800x800?sig=${i}`} className="w-full h-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
+              {/* Tap Animation Overlay (Mock) */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-active:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <Heart size={80} className="text-white fill-white drop-shadow-2xl animate-ping" />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-3">
+              <div className="flex gap-5 mb-3">
+                <Heart size={26} className="hover:text-red-500 hover:fill-red-500 transition cursor-pointer" />
+                <div onClick={() => onMessage(p.user || 1)} className="cursor-pointer hover:scale-110 transition hover:text-blue-400">
+                  <MessageCircle size={26} className="-scale-x-100" />
+                </div>
+                <Send size={26} className="hover:text-green-400 transition cursor-pointer" />
+                <div className="ml-auto"><Bookmark size={26} className="hover:text-yellow-400 transition" /></div>
+              </div>
+
+              <p className="text-sm">
+                <span className="font-bold mr-2 text-white">{p.username}</span>
+                <span className="opacity-90">{p.bio || "Just creating some vibes 🌊 #vibetalk #premium"}</span>
+              </p>
+              <p className="text-xs text-white/40 mt-1 uppercase font-bold tracking-wide">View all {p.likes || Math.floor(Math.random() * 500)} comments</p>
+              <p className="text-[10px] text-white/30 mt-1 uppercase">2 HOURS AGO</p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
 
 const Reels = ({ onMessage }) => {
+  // Use persistent mock data
+  const [reels] = useState(() => generateMockReels(100));
+
   return (
-    <div className="reels-container snap-y scrollbar-hide">
-      {[1, 2, 3, 4].map(i => (
-        <div key={i} className="reel-item snap-start h-screen w-full relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-purple-900/10 to-black animate-pulse">
-            {/* Placeholder for actual video */}
-            <img src={`https://source.unsplash.com/random/400x800?concert,neon,${i}`} className="reel-video w-full h-full object-cover opacity-90" />
+    <div className="reels-container snap-y snap-mandatory scrollbar-hide h-[calc(100vh-60px)] w-full overflow-y-scroll bg-black">
+      {reels.map((r, i) => (
+        <div key={i} className="reel-item snap-start h-full w-full relative flex items-center justify-center bg-gray-900 border-b border-gray-800">
+
+          <div className="absolute inset-0">
+            <img src={r.url} className="w-full h-full object-cover opacity-80" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
           </div>
 
-          <div className="reel-actions">
-            <div className="flex flex-col items-center gap-1"><Heart size={28} strokeWidth={2} /> <span className="text-xs">24k</span></div>
-            <div className="flex flex-col items-center gap-1"><MessageCircle size={28} strokeWidth={2} /> <span className="text-xs">1.2k</span></div>
-            <Send size={28} strokeWidth={2} />
-            <MoreVertical size={28} strokeWidth={2} />
-            <div className="w-8 h-8 border-2 border-white rounded-md overflow-hidden"><img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Music${i}`} /></div>
-          </div>
-
-          <div className="reel-overlay">
-            <div className="flex items-center gap-2 mb-2">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=ReelUser${i}`} className="w-8 h-8 rounded-full border border-white" />
-              <span className="font-bold">ReelStar_{i}</span>
-              <button className="text-xs border border-white px-2 py-0.5 rounded">Follow</button>
+          <div className="absolute bottom-20 left-4 right-16 text-white z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${r.user}`} className="w-full h-full bg-black" />
+              </div>
+              <span className="font-bold text-sm drop-shadow-md">{r.user}</span>
+              <span className="text-xs border border-white px-3 py-1 rounded-lg backdrop-blur-md font-bold">Follow</span>
             </div>
-            <p className="text-sm">Vibing with the new update! 🔥 #vibetalk</p>
-            <div className="flex items-center gap-2 mt-2 opacity-80 text-xs"><Mic size={12} /> Original Audio</div>
+            <p className="text-sm drop-shadow-md mb-2 line-clamp-2">{r.desc} <span className="text-blue-400 font-bold">#vibetalk</span></p>
+            <div className="flex items-center gap-2 text-xs opacity-90 overflow-hidden bg-white/10 w-fit px-2 py-1 rounded-full backdrop-blur-sm">
+              <Music size={12} /> <span className="animate-pulse">Trending Vibe • Original Audio</span>
+            </div>
           </div>
+
+          <div className="absolute bottom-24 right-3 flex flex-col items-center gap-6 text-white z-20">
+            <div className="flex flex-col items-center gap-1 group cursor-pointer">
+              <Heart size={32} className="group-hover:text-red-500 transition drop-shadow-xl" />
+              <span className="text-xs font-bold">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group cursor-pointer">
+              <MessageCircle size={32} className="group-hover:text-blue-400 transition drop-shadow-xl" />
+              <span className="text-xs font-bold">1.2k</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group cursor-pointer">
+              <Send size={32} className="group-hover:text-green-400 transition drop-shadow-xl" />
+            </div>
+            <div className="group cursor-pointer">
+              <MoreVertical size={24} className="opacity-80 drop-shadow-xl" />
+            </div>
+            <div className="w-8 h-8 rounded-lg border-2 border-white/50 overflow-hidden animate-spin-slow mt-2">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=music${i}`} className="w-full h-full bg-black p-1" />
+            </div>
+          </div>
+
         </div>
       ))}
     </div>
