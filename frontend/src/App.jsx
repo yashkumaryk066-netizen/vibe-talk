@@ -47,17 +47,56 @@ const Login = ({ onSuccess }) => {
     }
   };
 
-  // Initialize Google Button
+  // Initialize Google Button or Dev Fallback
   useEffect(() => {
-    if (window.google && googleBtnRef.current) {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+    const isDevMode = clientId === "YOUR_GOOGLE_CLIENT_ID" || !clientId;
+
+    if (!isDevMode && window.google && googleBtnRef.current) {
+      // Real Google Mode
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID", // Replace with valid ID
+        client_id: clientId,
         callback: handleGoogleResponse
       });
       window.google.accounts.id.renderButton(
         googleBtnRef.current,
         { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'pill', width: '350' }
       );
+    } else if (isDevMode && googleBtnRef.current) {
+      // 🛠️ Advanced Dev Mode: Auto-Simulate Success
+      // This ensures the app is usable immediately even without a Google Cloud Key
+      googleBtnRef.current.onclick = async () => {
+        setLoading(true);
+        try {
+          // Simulate network delay for realism
+          await new Promise(r => setTimeout(r, 1500));
+
+          // Generate Premium Demo User
+          const demoId = Math.floor(Math.random() * 10000);
+          const demoPayload = {
+            username: `VibeMaster_${demoId}`,
+            email: `demo_${demoId}@vibetalk.ai`,
+            password: 'password123'
+          };
+
+          // Register/Login as this demo user
+          try {
+            await api.signup(demoPayload);
+          } catch (e) { /* ignore if exists */ }
+
+          const res = await api.login(demoPayload.username, demoPayload.password);
+
+          if (res.data.status === 'logged in') {
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+            toast.success(`✨ Dev Mode: Welcome, ${demoPayload.username}!`, { style: { background: '#333', color: '#fff', border: '1px solid #00d2ff' } });
+            onSuccess();
+          }
+        } catch (err) {
+          toast.error("Dev Login Failed.");
+        } finally {
+          setLoading(false);
+        }
+      };
     }
   }, [isSignup]);
 
