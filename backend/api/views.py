@@ -47,14 +47,16 @@ class AuthViewSet(viewsets.ViewSet):
         from google.oauth2 import id_token
         from google.auth.transport import requests
         
+        # Real Verification
         try:
-            id_info = id_token.verify_oauth2_token(token, requests.Request())
+            # clock_skew_in_seconds handles server time differences
+            id_info = id_token.verify_oauth2_token(token, requests.Request(), clock_skew_in_seconds=5)
             google_id = id_info['sub']
             email = id_info['email']
             name = id_info.get('name', 'VibeUser')
             photo = id_info.get('picture', None)
-        except ValueError:
-            return Response({'error': 'Invalid Google Token'}, status=400)
+        except ValueError as e:
+            return Response({'error': f'Google Token Error: {str(e)}'}, status=400)
 
         # --- 2. Check if Profile exists with this Google ID ---
         try:
