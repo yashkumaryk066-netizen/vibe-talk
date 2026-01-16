@@ -725,42 +725,7 @@ const ProfileView = ({ user, onLogout }) => (
   </div >
 );
 
-// --- Main App Shell ---
-// --- Main App Shell ---
-const MainApp = ({ user, userData, onLogout }) => {
-  const [activeTab, setActiveTab] = useState('feed');
-  const navigate = useNavigate();
 
-  const handleMessage = async (targetUserId) => {
-    try {
-      // Direct messaging: Create/Get chat room then navigate
-      await api.post('/chatrooms/start_chat/', { target_user_id: targetUserId });
-      navigate(`/chats/${targetUserId}`);
-    } catch (e) {
-      console.log("Chat start fallback", e);
-      // Even if API fails (maybe offline?), try navigating
-      navigate(`/chats/${targetUserId}`);
-    }
-  };
-
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'feed': return <Feed onMessage={handleMessage} />;
-      case 'search': return <Discover user={user} userData={userData} />;
-      case 'reels': return <Reels onMessage={handleMessage} />;
-      case 'messages': return <MessagesList navigate={navigate} activeUser={user} />;
-      case 'profile': return <ProfileView user={user} onLogout={onLogout} />;
-      default: return <Feed onMessage={handleMessage} />;
-    }
-  };
-
-  return (
-    <div className="bg-black text-white min-h-screen">
-      {renderTab()}
-      <InstaNav activeTab={activeTab} onTabChange={setActiveTab} />
-    </div>
-  );
-};
 
 const Matches = () => {
   const [matches, setMatches] = useState([]);
