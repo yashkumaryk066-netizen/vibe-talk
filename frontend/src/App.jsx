@@ -63,7 +63,7 @@ const Login = ({ onSuccess }) => {
           {/* Logo Section */}
           <div className="text-center mb-8 relative">
             <div className="relative inline-block">
-              <h1 className="text-5xl font-black tracking-tighter mb-2 font-outfit bg-clip-text text-transparent bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 drop-shadow-[0_0_10px_rgba(0,210,255,0.5)]">
+              <h1 className="text-5xl font-black tracking-tighter mb-2 font-outfit text-white drop-shadow-[0_0_15px_rgba(0,210,255,0.8)]">
                 VibeTalk
               </h1>
               {/* Sound Wave Visualizer */}
