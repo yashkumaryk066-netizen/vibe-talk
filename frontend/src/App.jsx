@@ -809,22 +809,90 @@ const Matches = () => {
   );
 };
 
+// --- 🌍 Premium Public Rooms (HelloTalk Style) ---
+const PublicRooms = () => {
+  // Mock Data for "Live" Rooms
+  const rooms = [
+    { id: 'english-1', name: 'English Practice 🇺🇸', topic: 'Daily Conversation', members: 42, active: true },
+    { id: 'hindi-1', name: 'Desi Vibes 🇮🇳', topic: 'Late Night Talks', members: 128, active: true },
+    { id: 'music-1', name: 'Music Lounge 🎵', topic: 'Share your playlist', members: 15, active: true },
+    { id: 'gaming-1', name: 'Gaming Squad 🎮', topic: 'BGMI / Valo Rank Push', members: 8, active: true },
+    { id: 'tech-1', name: 'Dev Talks 💻', topic: 'Coding & AI', members: 24, active: true },
+    { id: 'dating-1', name: 'Love & Vibes ❤️', topic: 'Find your match', members: 256, active: true },
+  ];
+
+  const navigate = useNavigate();
+
+  return (
+    <div className="screen pb-20 pt-16 px-4">
+      <div className="fixed top-0 left-0 w-full bg-black/90 backdrop-blur z-20 p-4 border-b border-white/5 flex justify-between items-center">
+        <h1 className="text-2xl font-black italic tracking-tight text-white">Live Rooms <span className="text-red-500 animate-pulse">●</span></h1>
+        <button className="bg-white/10 p-2 rounded-full"><Plus size={24} /></button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 mt-2">
+        {rooms.map((room, i) => (
+          <div key={room.id} onClick={() => navigate(`/public-chat/${room.id}`, { state: { room } })}
+            className="group relative overflow-hidden bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition cursor-pointer active:scale-95">
+
+            {/* Glowing Backdrop */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-[50px] rounded-full group-hover:bg-blue-500/30 transition"></div>
+
+            <div className="flex justify-between items-start relative z-10">
+              <div>
+                <h3 className="font-bold text-lg text-white mb-1">{room.name}</h3>
+                <p className="text-sm text-white/60 mb-3">{room.topic}</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map(x => (
+                      <img key={x} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${room.id}${x}`} className="w-6 h-6 rounded-full border border-black bg-gray-800" />
+                    ))}
+                  </div>
+                  <span className="text-xs text-green-400 font-bold tracking-wide flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> {room.members} Online
+                  </span>
+                </div>
+              </div>
+              <div className="bg-white/10 p-2 rounded-full">
+                <ArrowRight size={20} className="-rotate-45 group-hover:rotate-0 transition duration-300" />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Create Room Prompt */}
+        <div className="border border-dashed border-white/20 rounded-2xl p-8 flex flex-col items-center justify-center text-center opacity-60 hover:opacity-100 transition cursor-pointer">
+          <Plus size={40} className="mb-2" />
+          <span className="font-bold">Create Your Room</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- 💬 Premium Instagram-Style Chat ---
 const ChatRoom = ({ user, isPublic = false }) => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
   const chatEndRef = useRef(null);
 
-  const roomData = location.state?.room;
-  const otherUserName = isPublic ? (roomData?.name || 'Public Room') : (location.state?.otherUser || 'Chat');
-  // For public room, id is room.id. For private, id is room.id.
+  // Determine Room Name/Info
+  const roomData = location.state?.room; // For public
+  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null }; // For Private
+  const chatTitle = isPublic ? (roomData?.name || 'Public Room') : otherUser.username;
+  const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username}`);
+
+  // Fetch Logic
+  const loadMessages = async () => {
+    try {
+      const res = await api.getMessages(id, isPublic);
+      setMessages(res.data);
+    } catch (err) { console.error(err); }
+  };
 
   useEffect(() => {
     loadMessages();
@@ -833,147 +901,113 @@ const ChatRoom = ({ user, isPublic = false }) => {
   }, [id]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chatEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages]);
 
-  const loadMessages = async () => {
-    try {
-      const res = await api.getMessages(id, isPublic);
-      setMessages(res.data);
-    } catch (err) { }
-  };
-
-  const handleSendText = async (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
     try {
       await api.sendMessage(id, text, isPublic);
       setText('');
       loadMessages();
-    } catch (err) { }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
-        const file = new File([audioBlob], "voice_note.mp3", { type: "audio/mp3" });
-        const formData = new FormData();
-        formData.append('voice_file', file);
-        if (isPublic) formData.append('public_room', id);
-        else formData.append('room', id);
-
-        try {
-          await api.sendMessage(id, formData, isPublic);
-          loadMessages();
-        } catch (err) { alert("Failed Voice Note"); }
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) { alert("Mic Error"); }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
+    } catch (e) { toast.error("Failed to send"); }
   };
 
   return (
-    <div className="screen flex flex-col h-screen p-0">
-      <div className="glass nav-bar sticky top-0 rounded-none p-3 flex justify-between z-50 items-center">
-        <div className="flex items-center gap-3">
-          <ArrowLeft className="cursor-pointer" onClick={() => navigate(isPublic ? '/rooms' : '/chats')} />
-          <div>
-            <h3 className="m-0 text-base">{otherUserName}</h3>
-            {isPublic && <span className="text-xs text-green-400">● Live Audio (Simulated)</span>}
-          </div>
-        </div>
-        {!isPublic && <MoreVertical className="cursor-pointer" onClick={() => setShowMenu(!showMenu)} />}
+    <div className="flex flex-col h-screen bg-black text-white">
+      {/* 🟢 Header */}
+      <div className="h-16 flex items-center px-4 border-b border-white/10 bg-black/90 backdrop-blur sticky top-0 z-50">
+        <ArrowLeft size={24} className="mr-4 cursor-pointer" onClick={() => navigate(-1)} />
 
-        {showMenu && !isPublic && (
-          <div className="glass absolute top-12 right-2 bg-gray-900 p-2 flex flex-col gap-2 rounded">
-            {/* Block/Report logic here invoked via api */}
-            <button className="btn btn-secondary text-xs p-2 text-red-500 border-red-500">Block / Report</button>
+        {!isPublic && (
+          <div className="w-8 h-8 rounded-full overflow-hidden mr-3 border border-white/20">
+            <img src={chatAvatar} className="w-full h-full object-cover" />
           </div>
         )}
+
+        <div className="flex-1">
+          <h3 className="font-bold text-lg leading-tight">{chatTitle}</h3>
+          {isPublic ? (
+            <span className="text-xs text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Live Audio</span>
+          ) : (
+            <span className="text-xs text-white/50">Active now</span>
+          )}
+        </div>
+
+        <div className="flex gap-4 opacity-70">
+          <Phone size={24} />
+          <Video size={24} />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-        {messages.length === 0 && !isPublic && (
-          <div className="flex flex-col items-center justify-center h-full opacity-70">
-            <p className="mb-4 text-sm">No vibes yet. Break the ice!</p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button className="chip" onClick={() => setText("What's your vibe? ✨")}>What's your vibe? ✨</button>
-              <button className="chip" onClick={() => setText("Send me a voice limit! 🎤")}>Voice challenge? 🎤</button>
-              <button className="chip" onClick={() => setText("Top 3 songs rn? 🎵")}>Top tracks? 🎵</button>
-            </div>
+      {/* 🟢 Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+        {/* Welcome Placeholder */}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center opacity-40 mt-20">
+            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4 text-4xl">👋</div>
+            <p>No messages yet.</p>
+            <p className="text-xs">Start the vibe!</p>
           </div>
         )}
-        {messages.map(msg => {
+
+        {messages.map((msg, i) => {
           const isMe = msg.sender_name === user.username;
+          const showAvatar = !isMe && (i === 0 || messages[i - 1].sender_name !== msg.sender_name);
+
           return (
-            <div key={msg.id} className={`max-w-[80%] ${isMe ? 'self-end' : 'self-start'} mb-2`}>
-              <div className={`flex items-baseline gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                {!isMe && <span className="text-xs opacity-50 block">{msg.sender_name}</span>}
-                <span className="text-[10px] opacity-30">{msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-              </div>
-              <div
-                className={`p-3 rounded-2xl ${isMe ? 'rounded-br-sm bg-primary bg-opacity-30' : 'rounded-bl-sm glass'}`}
-              >
-                {msg.text && <p className="m-0 text-sm">{msg.text}</p>}
-                {msg.voice_file && <audio controls src={msg.voice_file} className="h-8 w-48 mt-2" />}
-                {msg.audio_url && <div className="mt-2"><audio controls src={msg.audio_url} className="h-8 w-48" /><span className="text-[10px] opacity-50 block mt-1">Voice Record 🎤</span></div>}
+            <div key={i} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-up`}>
+              {!isMe && showAvatar && (
+                <div className="w-7 h-7 rounded-full bg-gray-700 overflow-hidden flex-shrink-0 self-end mb-1">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} />
+                </div>
+              )}
+              {!isMe && !showAvatar && <div className="w-7 flex-shrink-0" />}
+
+              <div className={`max-w-[70%] px-4 py-2 text-sm rounded-2xl ${isMe
+                  ? 'bg-blue-600 text-white rounded-br-none'
+                  : 'bg-zinc-800 text-white rounded-bl-none'
+                }`}>
+                {msg.text && <p>{msg.text}</p>}
+                {msg.audio_url && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="bg-black/30 w-8 h-8 rounded-full flex items-center justify-center"><Play size={12} fill="white" /></div>
+                    <div className="h-1 bg-white/30 w-24 rounded-full overflow-hidden">
+                      <div className="h-full bg-white w-1/2"></div>
+                    </div>
+                    <span className="text-[10px]">0:05</span>
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
-        {/* Fake Typing Indicator Logic: If last msg is mine and recent, simulate typing */}
-        {messages.length > 0 && messages[messages.length - 1].sender_name === user.username && !isPublic && (
-          <div className="self-start glass p-3 rounded-2xl rounded-bl-sm mb-2 animate-pulse flex items-center gap-1">
-            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce delay-75"></div>
-            <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce delay-150"></div>
-          </div>
-        )}
-        <div ref={chatEndRef} />
+        <div ref={chatEndRef}></div>
       </div>
 
-      <div className="glass p-3 rounded-none">
-        <div className="flex items-center gap-2">
-          <button
-            className={`btn w-12 h-12 rounded-full p-0 flex items-center justify-center ${isRecording ? 'bg-red-500 animate-pulse' : ''}`}
-            onMouseDown={startRecording} onMouseUp={stopRecording}
-            onTouchStart={startRecording} onTouchEnd={stopRecording}
-          >
-            {isRecording ? <Square size={18} fill="white" /> : <Mic size={20} />}
-          </button>
-
-          <form onSubmit={handleSendText} className="flex-1 flex gap-2">
-            <input
-              className="input-field m-0 rounded-full px-4"
-              placeholder={isRecording ? "Recording..." : "Message..."}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              disabled={isRecording}
-            />
-            <button className="btn w-12 h-12 rounded-full p-0 flex items-center justify-center">
-              <Send size={18} />
-            </button>
-          </form>
+      {/* 🟢 Input Area */}
+      <div className="p-3 bg-black border-t border-white/10 flex items-center gap-3">
+        <div className="bg-zinc-800 p-2 rounded-full cursor-pointer hover:bg-zinc-700 transition">
+          <Camera size={20} className="text-blue-400" />
         </div>
+
+        <form onSubmit={handleSend} className="flex-1 bg-zinc-900 rounded-full flex items-center px-4 py-2 border border-white/5 focus-within:border-white/20 transition">
+          <input
+            className="bg-transparent border-none outline-none text-sm text-white flex-1 placeholder-white/30"
+            placeholder="Message..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+          {text.trim() ? (
+            <button type="submit" className="text-blue-500 font-bold text-sm">Send</button>
+          ) : (
+            <div className="flex gap-3 opacity-60">
+              <Mic size={20} />
+              <ImageIcon size={20} />
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );
