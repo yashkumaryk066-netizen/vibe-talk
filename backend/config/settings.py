@@ -145,6 +145,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://vibe-talk-earn-yashamishra.vercel.app',
     'https://*.onrender.com', 
     'https://*.vercel.app',
+    'https://*.netlify.app',
+    'https://vibe-talk-premium-live.netlify.app',
     'https://makefriends.ysm.com',
     'http://localhost:5173'
 ]

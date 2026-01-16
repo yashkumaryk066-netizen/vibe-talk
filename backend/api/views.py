@@ -37,6 +37,11 @@ class AuthViewSet(viewsets.ViewSet):
             login(request, user)
             return Response({'status': 'logged in', 'user_id': user.id})
         return Response({'error': 'Invalid credentials'}, status=400)
+
+    @action(detail=False, methods=['post'])
+    def logout(self, request):
+        logout(request)
+        return Response({'status': 'logged out'})
     
     @action(detail=False, methods=['post'])
     def google_auth(self, request):

@@ -34,6 +34,7 @@ api.interceptors.request.use(
 export const login = (username, password) => api.post('/auth/login/', { username, password });
 export const googleAuth = (data) => api.post('/auth/google_auth/', data); // { googleId, email, name, photo }
 export const signup = (data) => api.post('/auth/signup/', data);
+export const logout = () => api.post('/auth/logout/');
 export const getMe = () => api.get('/auth/me/');
 export const updateMe = (data) => api.post('/profiles/update_me/', data); // New
 export const getProfiles = (learn) => api.get(`/profiles/${learn ? `?learn=${learn}` : ''}`);

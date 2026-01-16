@@ -1218,7 +1218,12 @@ const App = () => {
         <MainApp
           user={user}
           userData={userData}
-          onLogout={() => { setUser(null); setUserData(null); }}
+          onLogout={async () => {
+            try { await api.logout(); } catch (e) { console.error("Logout failed", e); }
+            setUser(null);
+            setUserData(null);
+            window.location.href = '/login'; // Force reload to clear any js state
+          }}
           onUpdate={setUserData}
         />
       </Router>
