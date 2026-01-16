@@ -12,9 +12,16 @@ class AuthViewSet(viewsets.ViewSet):
     # ... (Keep existing methods: signup, login, me)
     @action(detail=False, methods=['post'])
     def signup(self, request):
+        import re
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
+
+        # Basic Email Validation
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_regex, email):
+            return Response({'error': 'Invalid email address format'}, status=400)
+
         if User.objects.filter(username=username).exists():
             return Response({'error': 'Username taken'}, status=400)
         user = User.objects.create_user(username=username, password=password, email=email)
@@ -56,7 +63,7 @@ class AuthViewSet(viewsets.ViewSet):
             name = id_info.get('name', 'VibeUser')
             photo = id_info.get('picture', None)
         except ValueError as e:
-            return Response({'error': f'Google Token Error: {str(e)}'}, status=400)
+            return Response({'error': f'VibeAuth V3 Error: {str(e)}'}, status=400)
 
         # --- 2. Check if Profile exists with this Google ID ---
         try:
