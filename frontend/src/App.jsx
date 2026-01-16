@@ -966,8 +966,8 @@ const ChatRoom = ({ user, isPublic = false }) => {
               {!isMe && !showAvatar && <div className="w-7 flex-shrink-0" />}
 
               <div className={`max-w-[70%] px-4 py-2 text-sm rounded-2xl ${isMe
-                  ? 'bg-blue-600 text-white rounded-br-none'
-                  : 'bg-zinc-800 text-white rounded-bl-none'
+                ? 'bg-blue-600 text-white rounded-br-none'
+                : 'bg-zinc-800 text-white rounded-bl-none'
                 }`}>
                 {msg.text && <p>{msg.text}</p>}
                 {msg.audio_url && (
@@ -1166,131 +1166,112 @@ const ChatsList = ({ user }) => {
 
 // ... (Previous components like ChatList, Matches etc. remain above) 
 
-const AppLayout = ({ user, userData, setUserData, onLogout }) => {
-  const [showOnboarding, setShowOnboarding] = useState(false);
+const MainApp = ({ user, userData, onLogout, onUpdate }) => {
+  const [activeTab, setActiveTab] = useState('feed');
+  const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
 
-  useEffect(() => {
-    // Force onboarding if no name or profile pic set properly (basic heuristic)
-    // userData might simple initially, but let's check profile_pic
-    if (userData && (!userData.profile_pic)) {
-      // Delay slightly to not jar the user
-      const timer = setTimeout(() => {
-        setShowOnboarding(true);
-        toast('Upload a photo to start vibing!', { icon: '📸' });
-      }, 1000);
-      return () => clearTimeout(timer);
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'feed': return <Feed onMessage={(u) => setActiveTab('messages')} />;
+      case 'search': return <Discover user={user} userData={userData} />;
+      case 'reels': return <Reels onMessage={(u) => setActiveTab('messages')} />;
+      case 'messages': return <MessagesList activeUser={user} navigate={setActiveTab} />;
+      case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
+      default: return <Feed />;
     }
-  }, [userData]);
+  };
 
-  const MainApp = ({ user, userData, onLogout, onUpdate }) => {
-    const [activeTab, setActiveTab] = useState('feed');
-    const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
+  return (
+    <div className="bg-black text-white min-h-screen relative font-sans">
+      {/* Main Content Area */}
+      <div className="pb-16">
+        {renderContent()}
+      </div>
 
-    // Handle "Deep Links" or initial state from props if needed
-    // For now, default to 'feed'
-
-    const renderContent = () => {
-      switch (activeTab) {
-        case 'feed': return <Feed onMessage={(u) => setActiveTab('messages')} />;
-        case 'search': return <Discover user={user} userData={userData} />; // Using Discover as Search/Explore
-        case 'reels': return <Reels onMessage={(u) => setActiveTab('messages')} />;
-        case 'messages': return <MessagesList activeUser={user} navigate={setActiveTab} />;
-        case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
-        default: return <Feed />;
-      }
-    };
-
-    return (
-      <div className="bg-black text-white min-h-screen relative font-sans">
-        {/* Main Content Area */}
-        <div className="pb-16">
-          {renderContent()}
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
+        <div onClick={() => setActiveTab('feed')} className={`cursor-pointer transition ${activeTab === 'feed' ? 'scale-110 text-white' : 'text-white/50'}`}>
+          {activeTab === 'feed' ? <Heart size={28} className="fill-white" /> : <Heart size={28} />}
         </div>
 
-        {/* Bottom Navigation */}
-        <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
-          <div onClick={() => setActiveTab('feed')} className={`cursor-pointer transition ${activeTab === 'feed' ? 'scale-110 text-white' : 'text-white/50'}`}>
-            {activeTab === 'feed' ? <Heart size={28} className="fill-white" /> : <Heart size={28} />}
-          </div>
+        <div onClick={() => setActiveTab('search')} className={`cursor-pointer transition ${activeTab === 'search' ? 'scale-110 text-white' : 'text-white/50'}`}>
+          <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
+        </div>
 
-          <div onClick={() => setActiveTab('search')} className={`cursor-pointer transition ${activeTab === 'search' ? 'scale-110 text-white' : 'text-white/50'}`}>
-            <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
-          </div>
-
-          <div onClick={() => setActiveTab('reels')} className={`cursor-pointer transition ${activeTab === 'reels' ? 'scale-110' : 'opacity-80'}`}>
-            <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px] rounded-lg">
-              <div className="bg-black rounded-[6px] p-1">
-                <div className="w-5 h-5 border-2 border-white rounded-[2px] flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                </div>
+        <div onClick={() => setActiveTab('reels')} className={`cursor-pointer transition ${activeTab === 'reels' ? 'scale-110' : 'opacity-80'}`}>
+          <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px] rounded-lg">
+            <div className="bg-black rounded-[6px] p-1">
+              <div className="w-5 h-5 border-2 border-white rounded-[2px] flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div onClick={() => setActiveTab('messages')} className={`cursor-pointer transition ${activeTab === 'messages' ? 'scale-110 text-white' : 'text-white/50'}`}>
-            <div className="relative">
-              <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
-              <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black animate-pulse"></div>
-            </div>
-          </div>
-
-          <div onClick={() => setActiveTab('profile')} className={`cursor-pointer transition ${activeTab === 'profile' ? 'scale-110 border-white' : 'border-transparent text-white/50'}`}>
-            <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${activeTab === 'profile' ? 'border-white' : 'border-white/50'}`}>
-              <img src={userData?.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full object-cover" />
-            </div>
+        <div onClick={() => setActiveTab('messages')} className={`cursor-pointer transition ${activeTab === 'messages' ? 'scale-110 text-white' : 'text-white/50'}`}>
+          <div className="relative">
+            <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
+            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black animate-pulse"></div>
           </div>
         </div>
 
-        {/* Onboarding Modal */}
-        {showOnboarding && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
-            <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
+        <div onClick={() => setActiveTab('profile')} className={`cursor-pointer transition ${activeTab === 'profile' ? 'scale-110 border-white' : 'border-transparent text-white/50'}`}>
+          <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${activeTab === 'profile' ? 'border-white' : 'border-white/50'}`}>
+            <img src={userData?.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full object-cover" />
           </div>
-        )}
+        </div>
       </div>
-    );
+
+      {/* Onboarding Modal */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
+          <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const App = () => {
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { checkAuth(); }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await api.getMe();
+      setUser({ username: res.data.username });
+      setUserData(res.data);
+    } catch (err) { setUser(null); } finally { setLoading(false); }
   };
 
-  const App = () => {
-    const [user, setUser] = useState(null);
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
+  if (loading) return <div className="screen center-content"><div className="loader">Loading...</div></div>;
 
-    useEffect(() => { checkAuth(); }, []);
-
-    const checkAuth = async () => {
-      try {
-        const res = await api.getMe();
-        setUser({ username: res.data.username });
-        setUserData(res.data);
-      } catch (err) { setUser(null); } finally { setLoading(false); }
-    };
-
-    if (loading) return <div className="screen center-content"><div className="loader">Loading...</div></div>;
-
-    if (user) {
-      return (
-        <Router>
-          <MainApp
-            user={user}
-            userData={userData}
-            onLogout={() => { setUser(null); setUserData(null); }}
-            onUpdate={setUserData}
-          />
-        </Router>
-      );
-    }
-
+  if (user) {
     return (
-      <>
-        <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
-        <Router>
-          <Routes>
-            <Route path="*" element={<Login onSuccess={checkAuth} />} />
-          </Routes>
-        </Router>
-      </>
+      <Router>
+        <MainApp
+          user={user}
+          userData={userData}
+          onLogout={() => { setUser(null); setUserData(null); }}
+          onUpdate={setUserData}
+        />
+      </Router>
     );
-  };
+  }
 
-  export default App;
+  return (
+    <>
+      <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
+      <Router>
+        <Routes>
+          <Route path="*" element={<Login onSuccess={checkAuth} />} />
+        </Routes>
+      </Router>
+    </>
+  );
+};
+
+export default App;
