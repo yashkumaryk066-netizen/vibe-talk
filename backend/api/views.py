@@ -54,10 +54,16 @@ class AuthViewSet(viewsets.ViewSet):
         from google.oauth2 import id_token
         from google.auth.transport import requests
         
-        # Real Verification
+        # Real Verification with AUDIENCE (Client ID) for security
         try:
-            # clock_skew_in_seconds handles server time differences
-            id_info = id_token.verify_oauth2_token(token, requests.Request(), clock_skew_in_seconds=5)
+            # CRITICAL: audience parameter ensures token is for THIS app
+            CLIENT_ID = "336631033589-nq28gonut9lsv33ocs68tq4h1dejbbb8.apps.googleusercontent.com"
+            id_info = id_token.verify_oauth2_token(
+                token, 
+                requests.Request(), 
+                audience=CLIENT_ID,  # Prevent token spoofing
+                clock_skew_in_seconds=10  # Increased tolerance for server time drift
+            )
             google_id = id_info['sub']
             email = id_info['email']
             name = id_info.get('name', 'VibeUser')
