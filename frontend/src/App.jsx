@@ -52,7 +52,7 @@ const Login = ({ onSuccess }) => {
     // Initialize Google Identity Services
     if (window.google) {
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: "336631033589-nq28gonut9lsv33ocs68tq4h1dejbbb8.apps.googleusercontent.com",
         callback: handleGoogleResponse
       });
 
