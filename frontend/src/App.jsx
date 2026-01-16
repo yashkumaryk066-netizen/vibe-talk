@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Search, MessageCircle, User, Heart, Send, ArrowLeft, MoreVertical, Edit3, LogOut, Mic, Square, X, Check, Flame, Globe } from 'lucide-react';
+import { Search, MessageCircle, User, Heart, Send, ArrowLeft, MoreVertical, Edit3, LogOut, Mic, Square, X, Check, Flame, Globe, Camera, Plus, Image, Upload, ChevronDown, Save, Bookmark, Music } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import * as api from './api';
@@ -248,9 +248,7 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/profile/${userData.id}/upload_gallery/`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
-      });
+      const res = await api.uploadGalleryImage(userData.id, formData);
       toast.success("Added to gallery!", { id: 'upload-gal' });
     } catch (err) {
       console.error(err);
