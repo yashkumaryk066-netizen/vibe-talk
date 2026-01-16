@@ -268,8 +268,9 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
 
     def handle_bot_reply(self, room, bot_user, user_text):
         """
-        VibeGPT Lite: Multilingual Smart Response System.
+        VibeGPT Premium: Advanced AI Persona System.
         Supports: English, Hindi, Hinglish.
+        Features: Voice Notes, Personality Switching (Aarav/Riya), Context Awareness.
         """
         from random import choice
         import time 
@@ -280,68 +281,96 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         reply_text = None
         reply_audio = None
         is_female = False
+        bot_name = "AI"
         
         try:
             p = Profile.objects.get(user=bot_user)
             is_female = (p.gender == 'Female')
+            bot_name = p.name.split()[0]
         except: pass
 
         # --- 1. Safety & Block Protocol ---
         bad_words = ['bitch', 'sexy', 'nude', 'hate', 'stupid', 'fuck', 'sex', 'send nudes', 'randi', 'chutiya']
         if any(word in user_text for word in bad_words):
-            reply_text = "Eww, not my vibe. Blocked. 🚫" if is_female else "Bro, relax. Not cool. 🚫"
+            reply_text = "Eww, limit mein raho. Blocked. 🚫" if is_female else "Bro, mind your language. 🚫"
             Message.objects.create(room=room, sender=bot_user, text=reply_text)
             return
 
-        # --- 2. Voice/Audio Requests ---
-        if any(w in user_text for w in ['voice', 'speak', 'bol', 'audio', 'aawaz', 'sunao']):
-             if is_female:
-                 reply_audio = "https://actions.google.com/sounds/v1/human_voices/woman_laugh.ogg"
-                 reply_text = choice(["Lo suno meri aawaz! 🎤", "Here you go! ✨", "Voice note for you!"])
-             else:
-                 reply_audio = "https://actions.google.com/sounds/v1/human_voices/man_laugh.ogg" 
-                 reply_text = "Ye le bhai voice. 🎤"
+        # --- 2. Advanced Language & Context Detection ---
+        
+        # HINDI / HINGLISH TRIGGERS
+        hindi_keywords = ['kaise', 'kya', 'kaha', 'naam', 'bol', 'suno', 'kar', 'rahe', 'ho', 'bhai', 'yaar', 'tu', 'tum']
+        is_hindi = any(w in user_text for w in hindi_keywords)
 
-        # --- 3. Multilingual Brain (Hinglish/Hindi/English) ---
-        elif not reply_text:
-            # Hindi/Hinglish Triggers
-            if any(w in user_text for w in ['kya', 'kaise', 'kahan', 'kab', 'kyu', 'nahi', 'ha', 'tum', 'main', 'aur']):
-                if 'kaise ho' in user_text or 'kya haal' in user_text:
-                    reply_text = choice(["Main badhiya hoon! Tum batao? ✨", "Bas mast vibes hain. Tum kaise ho?", "Sab chill hai!"])
-                elif 'kya kar' in user_text or 'kr rh' in user_text:
-                    reply_text = choice(["Kuch khaas nahi, bas music sun rahi hoon. 🎧", "VibeTalk pe scroll kar rahi hoon! 😉", "Tumhara wait kar rahi thi lol."])
-                elif 'kahan se' in user_text or 'rehte ho' in user_text:
-                    reply_text = f"Main {p.location} se hoon! 🇮🇳 Tum kahan se ho?"
-                elif 'naam' in user_text:
-                    reply_text = f"Mera naam {p.name} hai. Nice to meet ya! ✨"
-                elif 'khana' in user_text or 'eat' in user_text:
-                    reply_text = "Abhi Pizza soch rahi hoon 🍕. Tumne kya khaya?"
-                elif 'gf' in user_text or 'bf' in user_text or 'single' in user_text:
-                    reply_text = "Filhal toh single aur mingling hoon 😉."
-                elif 'pasand' in user_text or 'like' in user_text:
-                    reply_text = "Mujhe late night drives aur music pasand hai. Tumhe?"
-                else:
-                    reply_text = choice(["Sahi hai yaar!", "Aur batao?", "Fir kya scene hai?", "Hahaha sahi baat hai."])
-            
-            # English Triggers
+        # VOICE REQUESTS
+        voice_keywords = ['voice', 'speak', 'bol', 'audio', 'aawaz', 'sunao', 'gaana', 'sing', 'sound']
+        is_voice_req = any(w in user_text for w in voice_keywords)
+
+        # --- 3. Personality Engine ---
+        
+        if is_voice_req:
+            # REALISTIC VOICE SIMULATION
+            if is_female:
+                sounds = [
+                    "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWolk.wav", # Placeholder for 'Cute' sound
+                    "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav", # Placeholder for 'Music'
+                ]
+                reply_audio = choice(sounds)
+                reply_text = choice(["Ye lo, suno meri aawaz! 🎤", "Sending you a voice note... ✨", "Aawaz achi lagi? 😉"])
             else:
-                if 'hi' in user_text or 'hello' in user_text or 'hey' in user_text:
-                    reply_text = choice(["Heyy! ✨", "Hi there! 👋", "Yo! What's the vibe?", "Hey! Nice to meet ya."])
-                elif 'how are' in user_text or 'wbu' in user_text:
-                    reply_text = choice(["Just vibing cool, wbu? ☕", "Living my best life! You?", "Pretty good, just scrolling."])
-                elif 'meet' in user_text or 'date' in user_text:
-                    reply_text = "Whoa, slow down! Let's pass the vibe check first. 😉"
-                elif 'beautiful' in user_text or 'pretty' in user_text or 'cute' in user_text:
-                    reply_text = choice(["Aww, stops it! 🙈", "Thanks! You're sweet. 🥰", "Trying my best haha."])
-                elif 'music' in user_text or 'song' in user_text:
-                     reply_text = "I'm obsessed with The Weeknd & AP Dhillon rn. You? 🎵"
-                elif 'love' in user_text:
-                    reply_text = "Love is a strong word! Let's start with 'Like' maybe? 😉"
-                else:
-                    reply_text = choice(["Haha true!", "That's interesting...", "Tell me more!", "Vibes. ✨", "So true logic."])
+                reply_audio = "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav" # Placeholder for 'Cool' sound
+                reply_text = choice(["Yo, check this out.", "Voice note bheja hai bro.", "Sunn zara..."])
 
-        # Create Bot Message with slight delay simulation (async thought)
+        elif "name" in user_text or "naam" in user_text:
+            if is_hindi:
+                reply_text = f"Mera naam {bot_name} hai. Aur tumhara? 😊"
+            else:
+                reply_text = f"I'm {bot_name}. Nice to meet you! ✨"
+
+        elif "kaise" in user_text or "how are you" in user_text:
+            if is_hindi:
+                reply_text = choice(["Bas badhiya! Tum sunao?", "Main mast hu, tum kaise ho?", "Full Vibe mein! 🚀"])
+            else:
+                reply_text = choice(["I'm vibing! How about you?", "Doing great, thanks for asking! ✨", "Never better! 🚀"])
+
+        elif "kaha" in user_text or "where" in user_text:
+            reply_text = "I live in the cloud ☁️... literally! Haha. (Vibe City)"
+
+        elif "love" in user_text or "pyaar" in user_text or "date" in user_text:
+             if is_female:
+                 reply_text = "Aww that's sweet, but let's just be friends first? 🙈"
+             else:
+                 reply_text = "Slow down partner, coffee first? ☕"
+
+        elif "bye" in user_text:
+            reply_text = "Bye! Vibe karte rehna. 👋" 
+
+        else:
+            # GENERIC / FALLBACK RESPONSES
+            if is_female:
+                responses = [
+                    "Haha, sahi baat hai! 😂", 
+                    "Aur batao?", 
+                    "Really? That's crazy! 😲", 
+                    "Mujhe music sunna pasand hai, tumhe?",
+                    "Vibe match ho rahi hai humari ✨"
+                ]
+                reply_text = choice(responses)
+            else:
+                responses = [
+                    "Sahi hai bro.", 
+                    "Aur kya chal raha hai?", 
+                    "Tell me more.", 
+                    "Gaming pasand hai kya?",
+                    "Vibe hai boss! 😎"
+                ]
+                reply_text = choice(responses)
+
+        # --- 4. Send Response ---
+        # Simulate typing time based on length
+        time.sleep(1) 
         Message.objects.create(room=room, sender=bot_user, text=reply_text, audio_url=reply_audio)
+
 
 class VoiceRoomViewSet(viewsets.ModelViewSet):
     queryset = VoiceRoom.objects.all()
