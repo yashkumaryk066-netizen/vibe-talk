@@ -131,7 +131,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     'https://vibe-talk-earn-yashamishra.vercel.app',
-    'https://vibe-talk-dubc.vercel.app',
+
     'http://localhost:5173',
 ]
 

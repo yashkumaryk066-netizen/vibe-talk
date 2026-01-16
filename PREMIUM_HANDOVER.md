@@ -14,7 +14,7 @@
 ### 2. Frontend Interface (Premium)
 - **Host**: Vercel Edge Network
 - **Project ID**: `vibe-talk-dubc`
-- **URL**: `https://vibe-talk-dubc.vercel.app` (Primary) / `https://makefriends.ysm.com` (Custom DNS required)
+- **URL**: `https://vibe-talk-earn-yashamishra.vercel.app` (Primary) / `https://makefriends.ysm.com` (Custom DNS required)
 - **Configuration**:
   - **Single Page Application (SPA)** architecture.
   - **Dynamic API Binding**: Automatically connects to backend via `VITE_API_URL`.

@@ -17,7 +17,7 @@ Vercel gives you a **Free Premium Domain** automatically. You don't need to add 
    - Go to the **Deployments** tab.
    - Click **Redeploy** on the top item (because your site is currently showing 404).
    - Once done, click **Visit**.
-   - Your URL will look like: `https://vibe-talk-dubc.vercel.app`
+   - Your URL will look like: `https://vibe-talk-earn-yashamishra.vercel.app`
 
 ### 🚀 Why 'Redeploy' is Critical
 Your site is showing `404 Not Found` right now because the Environment Variables were changed but the site wasn't rebuilt. **You MUST click Redeploy for it to work.**

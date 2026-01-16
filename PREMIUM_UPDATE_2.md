@@ -9,7 +9,7 @@
 ### 2. Google Auth Failure Fixed
 - **Issue**: Modern Browsers block "Cookies/Credentials" if the server isn't strict about who it talks to (CORS Security).
 - **Fix**: Updated Backend `settings.py` to strictly allow:
-  - `https://vibe-talk-dubc.vercel.app`
+  - `https://vibe-talk-earn-yashamishra.vercel.app`
   - `http://localhost:5173`
 - This allows the "Login" cookie to be set securely.
 
