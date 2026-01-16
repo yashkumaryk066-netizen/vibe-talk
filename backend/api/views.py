@@ -47,22 +47,14 @@ class AuthViewSet(viewsets.ViewSet):
         from google.oauth2 import id_token
         from google.auth.transport import requests
         
-        # 🛠️ GOD MODE BYPASS: For Instant Premium Demo w/o Client ID
-        if token == "DEV_TOKEN_BEYOND_PREMIUM_VIBE":
-            google_id = "100000000000000000000" # Fixed Mock ID
-            email = "investor_demo@vibetalk.ai"
-            name = "Vibe Investor"
-            photo = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-        else:
-            # Real Verification
-            try:
-                id_info = id_token.verify_oauth2_token(token, requests.Request())
-                google_id = id_info['sub']
-                email = id_info['email']
-                name = id_info.get('name', 'VibeUser')
-                photo = id_info.get('picture', None)
-            except ValueError:
-                return Response({'error': 'Invalid Google Token'}, status=400)
+        try:
+            id_info = id_token.verify_oauth2_token(token, requests.Request())
+            google_id = id_info['sub']
+            email = id_info['email']
+            name = id_info.get('name', 'VibeUser')
+            photo = id_info.get('picture', None)
+        except ValueError:
+            return Response({'error': 'Invalid Google Token'}, status=400)
 
         # --- 2. Check if Profile exists with this Google ID ---
         try:

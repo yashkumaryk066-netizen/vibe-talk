@@ -49,44 +49,20 @@ const Login = ({ onSuccess }) => {
 
   // Initialize Google Button or Dev Fallback
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
-    const isDevMode = clientId === "YOUR_GOOGLE_CLIENT_ID" || !clientId;
-
-    if (!isDevMode && window.google && googleBtnRef.current) {
-      // Real Google Mode
+    // Initialize Google Identity Services
+    if (window.google) {
       window.google.accounts.id.initialize({
-        client_id: clientId,
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse
       });
-      window.google.accounts.id.renderButton(
-        googleBtnRef.current,
-        { theme: 'outline', size: 'large', type: 'standard', text: 'continue_with', shape: 'pill', width: '350' }
-      );
-    } else if (isDevMode && googleBtnRef.current) {
-      // 🛠️ Advanced Dev Mode: Auto-Simulate Success
-      // This ensures the app is usable immediately even without a Google Cloud Key
-      googleBtnRef.current.onclick = async () => {
-        setLoading(true);
-        try {
-          // Simulate network delay for realism
-          await new Promise(r => setTimeout(r, 1000));
 
-          // Use the GOD MODE token to actually hit the backend
-          // This verifies the full Backend -> Database -> Session Flow!
-          const res = await api.googleAuth({ token: "DEV_TOKEN_BEYOND_PREMIUM_VIBE" });
-
-          if (res.data.status === 'logged in' || res.data.status === 'created') {
-            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
-            toast.success(`✨ Premium Demo: Logged in as Investor!`, { style: { background: '#333', color: '#fff', border: '1px solid #00d2ff' } });
-            onSuccess();
-          }
-        } catch (err) {
-          console.error(err);
-          toast.error("Dev Login Failed.");
-        } finally {
-          setLoading(false);
-        }
-      };
+      // Render the invisible Google button
+      if (googleBtnRef.current) {
+        window.google.accounts.id.renderButton(
+          googleBtnRef.current,
+          { theme: "filled_black", size: "large", type: "standard", shape: "pill", width: "380", text: "continue_with" }
+        );
+      }
     }
   }, [isSignup]);
 
