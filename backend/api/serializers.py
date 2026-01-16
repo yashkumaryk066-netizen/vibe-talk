@@ -15,9 +15,22 @@ class ProfileImageSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     images = ProfileImageSerializer(many=True, read_only=True)
+    profile_pic = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
         fields = ['id', 'user', 'username', 'name', 'bio', 'gender', 'interested_in', 'age', 'min_age_pref', 'max_age_pref', 'interests', 'profile_pic', 'voice_bio', 'images']
+
+    def get_profile_pic(self, obj):
+        if obj.profile_pic:
+            try:
+                return obj.profile_pic.url
+            except:
+                pass
+        if obj.google_pic_url:
+            return obj.google_pic_url
+        # Fallback to Premium 3D Avatars
+        return f"https://api.dicebear.com/7.x/avataaars/svg?seed={obj.user.username}"
 
 class UserInteractionSerializer(serializers.ModelSerializer):
     class Meta:

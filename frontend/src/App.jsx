@@ -355,280 +355,253 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
   );
 };
 
-const Discover = ({ user, userData }) => {
-  const [profiles, setProfiles] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [matchFound, setMatchFound] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
+// --- 📸 Instagram-Style UX Components ---
 
-  const audioRef = useRef(null);
-
-  // Parse my interests safely
-  const myInterests = userData?.interests ? userData.interests.toLowerCase().split(',').map(s => s.trim()) : [];
-
-  useEffect(() => { loadProfiles(); }, []);
-
-  const loadProfiles = async () => {
-    try {
-      const res = await api.getProfiles();
-      console.log("Profiles loaded:", res.data);
-      setProfiles(res.data.filter(p => p.username !== user.username));
-    } catch (err) { console.error(err); } finally { setLoading(false); }
-  };
-
-  const handleSwipe = async (userId, action) => {
-    // Haptic Vibe (Visual Shake)
-    const cardElement = document.querySelector('.swipe-card');
-    if (cardElement) {
-      cardElement.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
-      cardElement.style.transform = `translateX(${action === 'like' ? 200 : -200}px) rotate(${action === 'like' ? 20 : -20}deg)`;
-      cardElement.style.opacity = '0';
-    }
-
-    const currentProfile = profiles[currentIndex];
-
-    // Optimistic Update Logic
-    const nextStep = () => {
-      setPhotoIndex(0);
-      setCurrentIndex(prev => prev + 1);
-      // Reset styles for next mounted card (React Key logic resets DOM)
-    };
-
-    try {
-      const res = await api.swipe(userId, action);
-      if (res.data.match) {
-        // Show Boom match!
-        setMatchFound(currentProfile);
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#00d2ff', '#ff007f', '#ffffff']
-        });
-
-        // Wait for user to enjoy match before next
-        setTimeout(() => {
-          setMatchFound(null);
-          nextStep();
-        }, 3000);
-      } else {
-        // No match, move fast
-        setTimeout(nextStep, 350);
-      }
-    } catch (err) {
-      console.error(err);
-      // If error, maybe revert? For now, we assume success or ignore.
-      setTimeout(nextStep, 350);
-    }
-  };
-
-  const nextPhoto = (e) => {
-    e.stopPropagation();
-    const p = profiles[currentIndex];
-    const totalPhotos = 1 + (p.images ? p.images.length : 0);
-    if (totalPhotos > 1) {
-      setPhotoIndex(prev => (prev + 1) % totalPhotos);
-    }
-  };
-
-  const handleVoicePlay = (e, audioUrl) => {
-    e.stopPropagation();
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.onended = () => setIsPlaying(false);
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  if (loading) return <div className="screen center-content"><div className="loader">Finding Vibes...</div></div>;
-
-  if (currentIndex >= profiles.length) {
-    return (
-      <div className="screen center-content flex-col text-center">
-        <h2 className="mb-4">No more vibes nearby.</h2>
-        <p className="opacity-70 mb-6">Expand your settings or come back later.</p>
-        <button className="btn w-auto" onClick={() => window.location.reload()}>Refresh</button>
+const InstaNav = ({ activeTab, onTabChange }) => (
+  <div className="bottom-nav">
+    <div onClick={() => onTabChange('feed')} className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}>
+      {activeTab === 'feed' ? <Heart size={28} fill="white" /> : <Heart size={28} />}
+    </div>
+    <div onClick={() => onTabChange('search')} className={`nav-item ${activeTab === 'search' ? 'active' : ''}`}>
+      <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
+    </div>
+    <div onClick={() => onTabChange('reels')} className={`nav-item ${activeTab === 'reels' ? 'active' : ''}`}>
+      <div className="bg-white/10 p-1.5 rounded-lg border border-white/50">
+        <div className="w-5 h-5 border-2 border-white rounded-sm flex items-center justify-center">
+          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+        </div>
       </div>
-    );
-  }
+    </div>
+    <div onClick={() => onTabChange('messages')} className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`}>
+      <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
+    </div>
+    <div onClick={() => onTabChange('profile')} className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}>
+      <User size={28} strokeWidth={activeTab === 'profile' ? 3 : 2} />
+    </div>
+  </div>
+);
 
-  const p = profiles[currentIndex];
-  // Construct photo array
-  const allPhotos = p.profile_pic ? [p.profile_pic] : [];
-  if (p.images) allPhotos.push(...p.images.map(img => img.image));
-
-  const currentImage = allPhotos.length > 0 ? allPhotos[photoIndex] : null;
-
+const Feed = () => {
   return (
-    <div className="screen pb-20 relative overflow-hidden">
-      <div className="header flex justify-between items-center mb-4">
-        <h1 className="m-0 text-xl text-primary">VibeMatch</h1>
-        <div className="p-2 glass rounded-full"><Flame size={20} className="text-orange-500" /></div>
+    <div className="screen pb-20 overflow-y-auto">
+      <div className="flex justify-between items-center p-4 sticky top-0 bg-black/90 backdrop-blur z-20">
+        <h1 className="font-outfit text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">VibeTalk</h1>
+        <Heart size={24} />
       </div>
 
-      <div className="swipe-container">
-        <div key={p.user} className="swipe-card animate-up group" onClick={nextPhoto} onDoubleClick={() => handleSwipe(p.user, 'like')}>
-          {/* Neon Border Glow */}
-          <div className="absolute inset-0 rounded-[30px] border-2 border-transparent bg-gradient-to-b from-blue-500/50 to-purple-600/50 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none"></div>
-
-          {/* Photo Area */}
-          <div className="w-full h-full bg-gray-900 flex items-center justify-center text-6xl font-bold text-white/10 uppercase relative overflow-hidden rounded-[20px]">
-            {currentImage ? (
-              <img src={currentImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
-                <span className="text-8xl bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                  {p.name[0]}
-                </span>
-              </div>
-            )}
-
-            {/* Pagination Dots */}
-            {allPhotos.length > 1 && (
-              <div className="absolute top-4 left-0 w-full flex justify-center gap-1.5 px-4 z-20">
-                {allPhotos.map((_, i) => (
-                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === photoIndex ? 'w-6 bg-white shadow-lg shadow-white/50' : 'w-1.5 bg-white/30'}`} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="swipe-info pointer-events-none">
-            <h2 className="text-3xl font-bold text-white mb-1 flex items-center gap-2">
-              {p.name}, {p.age}
-              <span className="bg-blue-500 rounded-full p-1 text-[10px] flex items-center justify-center shadow-lg shadow-blue-500/50" title="Verified Vibe">
-                <Check size={12} strokeWidth={4} />
-              </span>
-            </h2>
-            <p className="text-white/80 text-sm mb-2 flex items-center gap-1 opacity-70"><Globe size={12} /> {p.location || 'India 🇮🇳'}</p>
-            <p className="text-white/80 text-lg mb-2">{p.gender}</p>
-            {p.bio && <p className="text-white/70 italic mb-4">"{p.bio}"</p>}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {p.interests && p.interests.split(',').map((tag, i) => {
-                const isMatch = myInterests.includes(tag.trim().toLowerCase());
-                return (
-                  <span key={i} className={`badge-gradient ${isMatch ? 'border-yellow-400 text-yellow-300 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : ''}`}>
-                    {tag.trim()} {isMatch && '✨'}
-                  </span>
-                );
-              })}
+      {/* Stories */}
+      <div className="story-bar">
+        {['Your Story', 'Ankush', 'Priya', 'Rahul', 'Sneha', 'Vikram'].map((name, i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div className="story-ring">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`} className="story-img" />
             </div>
-
-            {p.voice_bio && (
-              <div className="mt-3 flex items-center gap-2 pointer-events-auto" onClick={e => e.stopPropagation()}>
-                <div className={`p-3 rounded-full backdrop-blur cursor-pointer transition flex items-center justify-center ${isPlaying ? 'bg-primary text-black pulse-ring' : 'bg-white/20 text-white hover:bg-white/30'}`}
-                  onClick={(e) => handleVoicePlay(e, p.voice_bio)}>
-                  {isPlaying ? <Square size={16} fill="currentColor" /> : <Mic size={20} />}
-                </div>
-                <span className="text-xs text-white/80">{isPlaying ? "Listening..." : "Play Voice Intro"}</span>
-              </div>
-            )}
-
-            {allPhotos.length > 1 && <p className="text-xs text-center mt-4 opacity-50">Tap right/left to browse • Double tap to like</p>}
+            <span className="text-xs opacity-80">{name}</span>
           </div>
-        </div>
+        ))}
       </div>
 
-      <div className="swipe-buttons">
-        <button className="swipe-btn pass" onClick={() => handleSwipe(p.user, 'pass')}><X size={32} /></button>
-        <button className="swipe-btn like" onClick={() => handleSwipe(p.user, 'like')}><Heart size={32} fill="currentColor" /></button>
-      </div>
-
-      {matchFound && (
-        <div className="match-overlay">
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500 mb-4 animate-bounce">IT'S A VIBE!</h1>
-          <div className="flex gap-4 items-center">
-            <div className="avatar w-20 h-20 text-2xl">{user.username[0]}</div>
-            <Heart size={40} className="text-pink-500 animate-pulse" fill="currentColor" />
-            <div className="avatar w-20 h-20 text-2xl">{matchFound.name[0]}</div>
+      {/* Posts */}
+      {[1, 2, 3].map(i => (
+        <div key={i} className="mb-6 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3 p-3">
+            <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Post${i}`} className="w-full h-full" />
+            </div>
+            <span className="font-bold text-sm">VibeUser_{i}</span>
+            <MoreVertical size={16} className="ml-auto opacity-50" />
           </div>
-          <p className="mt-6 text-xl">You and {matchFound.name} like each other.</p>
+
+          <div className="w-full aspect-square bg-gray-900 overflow-hidden">
+            <img src={`https://source.unsplash.com/random/800x800?party,neon,${i}`} className="w-full h-full object-cover"
+              onError={(e) => e.target.src = 'https://media.istockphoto.com/id/1129638608/photo/technological-abstract-background.jpg?s=612x612&w=0&k=20&c=nO8E7i8Y7h6w6f5s7D6g8Hz7J9k0L1M2N3O4P5Q6R7S'} />
+          </div>
+
+          <div className="p-3">
+            <div className="flex gap-4 mb-2">
+              <Heart size={24} />
+              <MessageCircle size={24} />
+              <Send size={24} />
+            </div>
+            <p className="text-sm"><span className="font-bold">VibeUser_{i}</span> Late night vibes! ✨ #vibetalk #chill</p>
+          </div>
         </div>
-      )}
+      ))}
     </div>
   );
 };
 
-const PublicRooms = () => {
-  const [rooms, setRooms] = useState([]);
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+const Reels = () => {
+  return (
+    <div className="reels-container">
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="reel-item">
+          <div className="absolute inset-0 bg-gray-800 animate-pulse">
+            {/* Placeholder for actual video */}
+            <img src={`https://source.unsplash.com/random/400x800?dance,music,${i}`} className="reel-video opacity-60" />
+          </div>
 
-  const fetchRooms = () => {
-    api.getPublicRooms().then(res => {
-      setRooms(res.data);
-      setLoading(false);
-    }).catch(err => setLoading(false));
-  };
+          <div className="reel-actions">
+            <div className="flex flex-col items-center gap-1"><Heart size={28} strokeWidth={2} /> <span className="text-xs">24k</span></div>
+            <div className="flex flex-col items-center gap-1"><MessageCircle size={28} strokeWidth={2} /> <span className="text-xs">1.2k</span></div>
+            <Send size={28} strokeWidth={2} />
+            <MoreVertical size={28} strokeWidth={2} />
+            <div className="w-8 h-8 border-2 border-white rounded-md overflow-hidden"><img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Music${i}`} /></div>
+          </div>
+
+          <div className="reel-overlay">
+            <div className="flex items-center gap-2 mb-2">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=ReelUser${i}`} className="w-8 h-8 rounded-full border border-white" />
+              <span className="font-bold">ReelStar_{i}</span>
+              <button className="text-xs border border-white px-2 py-0.5 rounded">Follow</button>
+            </div>
+            <p className="text-sm">Vibing with the new update! 🔥 #vibetalk</p>
+            <div className="flex items-center gap-2 mt-2 opacity-80 text-xs"><Mic size={12} /> Original Audio</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const MessagesList = ({ navigate }) => {
+  // Simulating Chat List
+  return (
+    <div className="screen pb-20 pt-14">
+      <div className="fixed top-0 w-full p-4 glass z-10 flex justify-between items-center">
+        <h1 className="font-bold text-xl flex items-center gap-1">vibe_user <span className="text-xs opacity-50">▼</span></h1>
+        <Edit3 size={24} />
+      </div>
+
+      <div className="px-4 py-2">
+        <div className="bg-white/10 p-2 rounded-lg flex items-center gap-2 text-white/50 text-sm">
+          <Search size={16} /> Search
+        </div>
+      </div>
+
+      <div className="flex flex-col">
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="chat-item" onClick={() => navigate(`/chats`)}>
+            <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Chat${i}`} className="w-full h-full rounded-full bg-gray-800" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-sm">Crush_{i}</h4>
+              <p className="text-xs opacity-60">Sent you a reel • 2h</p>
+            </div>
+            <camera size={20} className="opacity-50" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Re-using existing Swipe Logic for 'Search' tab ---
+const Discover = ({ user, userData }) => {
+  const [profiles, setProfiles] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [matchFound, setMatchFound] = useState(null);
 
   useEffect(() => {
-    fetchRooms();
+    api.getProfiles().then(res => setProfiles(res.data.filter(p => p.username !== user.username))).catch(console.error);
   }, []);
 
-  const createRoom = async () => {
-    const name = prompt("Name your Vibe Room:", "Chill Zone ☕");
-    if (!name) return;
-
-    // Mock creation for now or real API if implemented
-    // Let's assume we post to /public-rooms/
-    // Since backend ViewSet is standard ModelViewSet, POST /public-rooms/ should work if serializer allows
-    try {
-      // We might need to adjust backend to allow creation if not already
-      // For now, let's optimistic add or alerting
-      alert("Creating vibe rooms is coming in Phase 2! Stay tuned.");
-    } catch (e) { console.error(e); }
+  const handleSwipe = async (userId, action) => {
+    // Existing swipe logic simplified for brevity in this view
+    if (action === 'like') {
+      const res = await api.swipe(userId, 'like');
+      if (res.data.match) {
+        toast.success("It's a Match! 🔥");
+      }
+    }
+    setCurrentIndex(prev => prev + 1);
   };
 
-  const joinRoom = (room) => {
-    api.joinPublicRoom(room.id).then(() => {
-      navigate(`/public-chat/${room.id}`, { state: { room } });
-    }).catch(err => toast.error("Could not join room"));
+  if (currentIndex >= profiles.length) return <div className="screen center-content"><h2>No more vibes.</h2></div>;
+  const p = profiles[currentIndex];
+  // Fallback if images missing (handled by backend now, but safe check)
+  const imgUrl = p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`;
+
+  return (
+    <div className="screen pb-20 pt-4 relative overflow-hidden bg-black">
+      <div className="swipe-card mx-auto mt-4 w-[90%] h-[70vh] rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 bg-gray-900">
+        <img src={imgUrl} className="w-full h-full object-cover" />
+        <div className="absolutebottom-0 left-0 w-full bg-gradient-to-t from-black via-black/50 to-transparent p-6 pt-20 flex flex-col justify-end h-full">
+          <h2 className="text-3xl font-bold flex items-center gap-2">{p.name}, {p.age} <span className="bg-blue-500 text-[10px] p-1 rounded-full"><Check size={8} /></span></h2>
+          <p className="opacity-80 mb-4">{p.bio || "Just vibing."}</p>
+          <div className="flex gap-4 mt-2">
+            <button onClick={() => handleSwipe(p.user, 'pass')} className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition"><X size={30} /></button>
+            <button onClick={() => handleSwipe(p.user, 'like')} className="w-14 h-14 rounded-full border-2 border-green-500 flex items-center justify-center text-green-500 hover:bg-green-500 hover:text-white transition"><Heart size={30} /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProfileView = ({ user, onLogout }) => (
+  <div className="screen pb-20 pt-10 px-4">
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-xl font-bold">{user.username} <span className="text-red-500 text-xs px-2 py-0.5 bg-red-500/10 rounded">LIVE</span></h1>
+      <div className="flex gap-4">
+        <div className="bg-white/10 p-2 rounded-full"><Plus size={20} /></div>
+        <div onClick={onLogout} className="bg-red-500/20 p-2 rounded-full text-red-500"><LogOut size={20} /></div>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-6 mb-6">
+      <div className="story-ring w-24 h-24 p-1">
+        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full rounded-full bg-gray-800" />
+      </div>
+      <div className="flex gap-6 text-center">
+        <div><span className="font-bold text-lg block">154</span><span className="text-xs opacity-60">Posts</span></div>
+        <div><span className="font-bold text-lg block">2.4M</span><span className="text-xs opacity-60">Followers</span></div>
+        <div><span className="font-bold text-lg block">12</span><span className="text-xs opacity-60">Following</span></div>
+      </div>
+    </div>
+
+    <div className="mb-6">
+      <p className="font-bold">Vibe Creator</p>
+      <p className="opacity-80 text-sm">Building the future of social. 🚀<br />Artist | Dreamer | Vibe</p>
+    </div>
+
+    <div className="flex gap-2 mb-8">
+      <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Edit Profile</button>
+      <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Share Profile</button>
+    </div>
+
+    {/* Grid */}
+    <div className="grid grid-cols-3 gap-1">
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+        <div key={i} className="aspect-square bg-gray-800 relative group overflow-hidden">
+          <img src={`https://source.unsplash.com/random/300x300?art,${i}`} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// --- Main App Shell ---
+const MainApp = ({ user, userData, onLogout }) => {
+  const [activeTab, setActiveTab] = useState('feed');
+  const navigate = useNavigate();
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'feed': return <Feed />;
+      case 'search': return <Discover user={user} userData={userData} />;
+      case 'reels': return <Reels />;
+      case 'messages': return <MessagesList navigate={navigate} />;
+      case 'profile': return <ProfileView user={user} onLogout={onLogout} />;
+      default: return <Feed />;
+    }
   };
 
   return (
-    <div className="screen pb-20">
-      <div className="header sticky top-0 z-10 glass rounded-none p-4 mb-4 border-none flex justify-between items-center">
-        <h1 className="m-0 text-xl font-bold flex items-center gap-2"><Mic size={20} /> Voice Rooms</h1>
-        <button className="btn text-xs px-3 py-1 bg-white/10" onClick={createRoom}>+ Create</button>
-      </div>
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center p-10 opacity-50 space-y-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs">Tuning in...</p>
-        </div>
-      ) : (
-        rooms.length === 0 ? (
-          <div className="text-center opacity-60 mt-10 p-4">
-            <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <Mic size={32} />
-            </div>
-            <h3>No Live Vibes</h3>
-            <p className="text-sm mb-4">Be the first to start a voice room!</p>
-            <button className="btn" onClick={createRoom}>Start a Room 🎙️</button>
-          </div>
-        ) : (
-          rooms.map((r, i) => (
-            <div key={i} className="glass card animate-up mb-4 p-4 flex justify-between items-center cursor-pointer hover:bg-white hover:bg-opacity-5 transition" onClick={() => joinRoom(r)}>
-              <div>
-                <h3 className="font-bold text-lg">{r.name}</h3>
-                <p className="text-sm opacity-70">{r.topic || 'Just vibing'}</p>
-                <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full mt-1 inline-block">{r.category || 'General'}</span>
-              </div>
-              <div className="text-center min-w-[50px]">
-                <span className="block font-bold text-xl">{r.members_count || 0}</span>
-                <span className="text-[10px] uppercase tracking-wider opacity-50 flex items-center justify-center gap-1"><div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> Live</span>
-              </div>
-            </div>
-          ))
-        )
-      )}
+    <div className="bg-black text-white min-h-screen">
+      {renderTab()}
+      <InstaNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };
@@ -1078,13 +1051,20 @@ function App() {
 
   if (loading) return <div className="screen center-content"><div className="loader">Loading...</div></div>;
 
+  if (user) {
+    return (
+      <Router>
+        <MainApp user={user} userData={userData} onLogout={() => { setUser(null); setUserData(null); }} />
+      </Router>
+    );
+  }
+
   return (
     <>
       <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
       <Router>
         <Routes>
-          <Route path="/" element={!user ? <Login onSuccess={checkAuth} /> : <AppLayout user={user} userData={userData} setUserData={setUserData} onLogout={() => { setUser(null); setUserData(null); }} />} />
-          <Route path="/*" element={!user ? <Login onSuccess={checkAuth} /> : <AppLayout user={user} userData={userData} setUserData={setUserData} onLogout={() => { setUser(null); setUserData(null); }} />} />
+          <Route path="*" element={<Login onSuccess={checkAuth} />} />
         </Routes>
       </Router>
     </>
