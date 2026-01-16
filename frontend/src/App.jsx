@@ -30,20 +30,13 @@ const Login = ({ onSuccess }) => {
   const handleGoogleResponse = async (response) => {
     setLoading(true);
     try {
-      const data = parseJwt(response.credential);
-      if (!data) throw new Error("Failed to decode Google Token");
+      // Send the raw ID Token to backend for secure verification
+      const res = await api.googleAuth({ token: response.credential });
 
-      const payload = {
-        google_id: data.sub,
-        email: data.email,
-        name: data.name,
-        photo: data.picture
-      };
-
-      const res = await api.googleAuth(payload);
       if (res.data.status === 'logged in' || res.data.status === 'created') {
         confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        toast.success(`Welcome, ${data.given_name}! 🚀`, { style: { background: '#333', color: '#fff' } });
+        // Use user info from response if available, or just generic welcome
+        toast.success(`Welcome to VibeTalk! 🚀`, { style: { background: '#333', color: '#fff' } });
         onSuccess();
       }
     } catch (err) {

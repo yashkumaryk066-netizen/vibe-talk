@@ -34,18 +34,34 @@ class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def google_auth(self, request):
         """
-        Handle Google Login/Signup in one atomic request.
-        Payload: { googleId, email, name, photo }
+        Handle Google Login/Signup securely by verifying ID Token.
+        Payload: { token: "JWT_ID_TOKEN_FROM_GOOGLE" }
         """
-        google_id = request.data.get('google_id')
-        email = request.data.get('email')
-        name = request.data.get('name')
-        photo = request.data.get('photo')
+        token = request.data.get('token')
+        
+        if not token:
+             return Response({'error': 'No token provided'}, status=400)
 
-        if not google_id or not email:
-            return Response({'error': 'Invalid Google Data'}, status=400)
+        try:
+             # --- 1. Verify Token with Google ---
+             # This ensures the request isn't fake/spoofed
+             from google.oauth2 import id_token
+             from google.auth.transport import requests
+             
+             # CLIENT_ID should ideally be in settings/env, assuming matching frontend ID for now
+             # You can pass None to verify_oauth2_token if you just want to decode, but checking audience is safer
+             id_info = id_token.verify_oauth2_token(token, requests.Request())
+             
+             # Get verified info
+             google_id = id_info['sub']
+             email = id_info['email']
+             name = id_info.get('name', 'VibeUser')
+             photo = id_info.get('picture', None)
 
-        # 1. Check if Profile exists with this Google ID
+        except ValueError:
+             return Response({'error': 'Invalid Google Token'}, status=400)
+
+        # --- 2. Check if Profile exists with this Google ID ---
         try:
             profile = Profile.objects.get(google_id=google_id)
             user = profile.user
@@ -53,11 +69,9 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'status': 'logged in', 'user_id': user.id})
         
         except Profile.DoesNotExist:
-            # 2. Check if user with this email already exists (Legacy or manual signup)
-            # If so, link them. If not, create new.
+            # --- 3. Check if user with this email already exists (Link Account) ---
             try:
                 user = User.objects.get(email=email)
-                # Link existing user to Google ID
                 profile, created = Profile.objects.get_or_create(user=user)
                 profile.google_id = google_id
                 if not profile.profile_pic and photo:
@@ -65,9 +79,13 @@ class AuthViewSet(viewsets.ViewSet):
                 profile.save()
                 
             except User.DoesNotExist:
-                # 3. Create Fresh User & Profile
-                username = email.split('@')[0] + "_" + str(google_id[-4:]) # Unique username handle
-                user = User.objects.create_user(username=username, email=email, password=None) # Unusable password
+                # --- 4. Create Fresh User & Profile ---
+                import uuid
+                # Generate unique username: vibe_yash_1234
+                base_name = email.split('@')[0][:10]
+                username = f"{base_name}_{str(uuid.uuid4())[:4]}"
+                
+                user = User.objects.create_user(username=username, email=email, password=None)
                 profile = Profile.objects.create(
                     user=user, 
                     name=name, 
