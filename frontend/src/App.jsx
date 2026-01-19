@@ -55,22 +55,56 @@ const FAKE_PROFILES = {
   ]
 };
 
-const generateSmartReply = (text) => {
+const generateSmartReply = (text, conversationCount = 0) => {
   const lower = text.toLowerCase();
 
   // 📚 Study / Career -> YSM AI Referral
-  if (lower.match(/study|padhai|homework|math|science|question|answer|doubt|solve|physics|chemistry/)) {
+  if (lower.match(/study|padhai|homework|math|science|question|answer|doubt|solve|physics|chemistry|exam|test/)) {
     return [
-      "Wait! Padhai/Study ke liye toh ek hi boss hai - **YSM AI**! 🎓",
-      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai!",
-      "Are study doubts? Go for **YSM AI**, main toh bas vibes ke liye hoon 😉"
+      "Wait! Padhai/Study ke liye toh ek hi boss hai - **YSM AI**! 🎓 Wahan advanced help milega!",
+      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai! Main toh timepass ke liye hoon 😄",
+      "Are study doubts? **YSM AI** best hai uske liye! Wahan full solutions milte hain 📖"
     ];
   }
 
-  if (lower.match(/hi|hello|hey|hlo/)) return ["Hey! Kaisa hai? 😉", "Hello jee! Kya chal raha hai?"];
-  if (lower.match(/single|bf|gf|date/)) return ["Philhal toh single hoon, bas dosti dhoond rahi hoon! 💫", "Slow down! Let's vibe first. 🙈"];
+  // 🎤 Voice Chat Prompt (after 3+ messages)
+  if (conversationCount >= 3 && Math.random() > 0.6) {
+    return [
+      "Btw, text boring lag raha? Voice call karte hain! 📞 Zyada maza aayega 😊",
+      "Typing thak gaye? Call button pe tap karo, let's talk! 🎤",
+      "Voice mein baat karte hain? Call kar lo! 📞 Aur interesting hoga"
+    ];
+  }
 
-  return ["Aur batao? Sab badhiya?", "Sahi hai! Aur kya plan?", "Hmm interesting... tell me more! 🤔", "Haha sahi baat hai! 😂"];
+  // 👋 Greetings
+  if (lower.match(/^(hi|hello|hey|hlo|sup|kya hal|namaste)/)) {
+    return [
+      "Hey! Kaisa hai? 😉 Bata kya chal raha hai aajkal?",
+      "Hello jee! Sab badhiya? Kuch interesting plan hai aaj? 🌟",
+      "Heyy! Nice to see you online 😊 What's up?"
+    ];
+  }
+
+  // 💕 Relationship/Dating
+  if (lower.match(/single|bf|gf|date|love|crush|shaadi|relationship/)) {
+    return [
+      "Philhal toh single hoon 😅, bas dosti dhoond rahi hoon! Tum batao?",
+      "Slow down! 🙈 Pehle achhe se baat toh karte hain, phir dekhte hain!",
+      "Haha! Direct questions 😂 Let's just vibe first, friendship se start karte hain"
+    ];
+  }
+
+  // 🎯 Default Natural Responses with Follow-ups
+  const defaultReplies = [
+    "Aur batao? Aaj ka kya plan hai? 🤔",
+    "Sahi hai! Btw, tumhara favorite timepass kya hai? 🎮",
+    "Hmm interesting! Aur kuch share karo apne baare mein 😊",
+    "Haha nice! 😄 Toh weekends mein kya karte ho mostly?",
+    "Cool cool! Music sunna pasand hai? 🎵",
+    "Nice! Coffee lover ho ya chai person? ☕"
+  ];
+
+  return [defaultReplies[Math.floor(Math.random() * defaultReplies.length)]];
 };
 
 const getOrInitFakeChat = (userGender) => {
@@ -86,6 +120,8 @@ const getOrInitFakeChat = (userGender) => {
     ...bot,
     lastMessage: "Hey! Just saw your profile. Vibe match? 👀",
     lastTime: new Date().toISOString(),
+    createdAt: Date.now(), // Track when fake chat was created
+    conversationCount: 0, // Track number of exchanges
     isFake: true,
     msgs: [{ id: 1, text: "Hey! Just saw your profile. Vibe match? 👀", sender_name: bot.name, created_at: new Date().toISOString() }]
   };
@@ -1431,7 +1467,11 @@ const ChatRoom = ({ user, isPublic = false }) => {
         setIsTyping(true);
         const replyDelay = Math.random() * 3000 + 2000;
         setTimeout(() => {
-          const replies = generateSmartReply(text);
+          // Get conversation count from localStorage
+          const saved = localStorage.getItem('vibe_fake_chat');
+          const conversationCount = saved ? (JSON.parse(saved).conversationCount || 0) : 0;
+
+          const replies = generateSmartReply(text, conversationCount);
           const replyText = replies[Math.floor(Math.random() * replies.length)];
           const replyMsg = {
             id: Date.now() + 100,
@@ -1442,12 +1482,12 @@ const ChatRoom = ({ user, isPublic = false }) => {
           setMessages(prev => [...prev, replyMsg]);
           setIsTyping(false);
 
-          // Persist last message for Inbox Preview
-          const saved = localStorage.getItem('vibe_fake_chat');
+          // Persist last message for Inbox Preview + Increment conversation count
           if (saved) {
             const parsed = JSON.parse(saved);
             parsed.lastMessage = replyText;
             parsed.lastTime = new Date().toISOString();
+            parsed.conversationCount = (parsed.conversationCount || 0) + 1; // Increment
             parsed.msgs.push(myMsg, replyMsg); // Basic history tracking
             localStorage.setItem('vibe_fake_chat', JSON.stringify(parsed));
           }
