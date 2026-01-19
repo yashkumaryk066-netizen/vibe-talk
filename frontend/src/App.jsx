@@ -55,56 +55,147 @@ const FAKE_PROFILES = {
   ]
 };
 
-const generateSmartReply = (text, conversationCount = 0) => {
+const generateSmartReply = (text, conversationCount = 0, botName = "Ananya") => {
   const lower = text.toLowerCase();
 
   // 📚 Study / Career -> YSM AI Referral
   if (lower.match(/study|padhai|homework|math|science|question|answer|doubt|solve|physics|chemistry|exam|test/)) {
     return [
       "Wait! Padhai/Study ke liye toh ek hi boss hai - **YSM AI**! 🎓 Wahan advanced help milega!",
-      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai! Main toh timepass ke liye hoon 😄",
-      "Are study doubts? **YSM AI** best hai uske liye! Wahan full solutions milte hain 📖"
+      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai! Main toh timepass ke liye hoon 😄"
     ];
   }
 
-  // 🎤 Voice Chat Prompt (after 3+ messages)
-  if (conversationCount >= 3 && Math.random() > 0.6) {
+  // 🎤 Voice Chat Prompt (after 4+ messages)
+  if (conversationCount >= 4 && Math.random() > 0.7) {
     return [
       "Btw, text boring lag raha? Voice call karte hain! 📞 Zyada maza aayega 😊",
-      "Typing thak gaye? Call button pe tap karo, let's talk! 🎤",
-      "Voice mein baat karte hain? Call kar lo! 📞 Aur interesting hoga"
+      "Typing thak gaye? Call button pe tap karo, let's talk! 🎤"
+    ];
+  }
+
+  // 👤 Name/Identity Questions
+  if (lower.match(/naam|name|tu kaun|tumhara naam|aapka naam|your name|who are you/)) {
+    return [
+      `Main ${botName} hoon! 😊 Tum btao, tumhara naam kya hai?`,
+      `${botName} here! Nice to meet you 💫 Tumhara naam?`,
+      `Heyyy, I'm ${botName}! Aur tum? 🤗`
+    ];
+  }
+
+  // 🎯 "What do you do" / "Plan" / "Kya karte ho"
+  if (lower.match(/kya karte ho|kya plan|tumhara plan|aapka plan|what do you do|kya kar rahe|free time|hobby/)) {
+    return [
+      "Abhi toh chill kar rahi hoon 😌 Music sun rahi thi actually. Tum btao, aaj ka plan?",
+      "Bas timepass! 😄 Netflix dekh leti hoon ya music sunti hoon. Tumhara kya scene hai?",
+      "Free time mein friends ke saath ghumna, music, netflix vibes 🎵 Tumhare hobbies kya hain?"
+    ];
+  }
+
+  // 😴 Sleep/Rest responses
+  if (lower.match(/sota|sleep|rest|aaraam|thak gaya|thak gayi/)) {
+    return [
+      "Haha same yaar! 😂 Main bhi sota rehna prefer karti hoon. Lazy vibes 💤",
+      "Relatable! 😴 Neend sabse best hobby hai. Weekdays mein toh bohot neend aati hai",
+      "Sahi hai! Rest important hai yaar. Mai bhi zyada active nahi rehti 😅"
+    ];
+  }
+
+  // 🎮 Interests shared by user (echo back)
+  if (lower.match(/music|gaana|song|gaming|game|movie|film|series|netflix|youtube/)) {
+    const topic = lower.includes('music') || lower.includes('gaana') || lower.includes('song') ? 'music' :
+      lower.includes('game') || lower.includes('gaming') ? 'gaming' :
+        lower.includes('movie') || lower.includes('film') ? 'movies' : 'series';
+
+    return [
+      `Ohh nice! ${topic} mujhe bhi pasand hai! 🔥 Favorite kya hai tumhara?`,
+      `Same interest! 😍 Main bhi ${topic} bohot dekhti hoon. Recommend kuch karo?`,
+      `Sahi choice! ${topic} ke bina toh bore ho jaate hain. Kya sunते/dekhte ho요즘?`
     ];
   }
 
   // 👋 Greetings
-  if (lower.match(/^(hi|hello|hey|hlo|sup|kya hal|namaste)/)) {
+  if (lower.match(/^(hi|hello|hey|hlo|sup|kya hal|namaste|hii|heyyy)$/)) {
     return [
-      "Hey! Kaisa hai? 😉 Bata kya chal raha hai aajkal?",
-      "Hello jee! Sab badhiya? Kuch interesting plan hai aaj? 🌟",
-      "Heyy! Nice to see you online 😊 What's up?"
+      "Heyyy! Kaisa chal raha hai? 😊 Bored ho kya?",
+      "Hello ji! Sab badhiya? Aaj kuch special? 🌟",
+      "Heyy! Nice to see you 💫 What's up?"
     ];
   }
 
   // 💕 Relationship/Dating
-  if (lower.match(/single|bf|gf|date|love|crush|shaadi|relationship/)) {
+  if (lower.match(/single|bf|gf|date|love|crush|shaadi|relationship|pyar/)) {
     return [
-      "Philhal toh single hoon 😅, bas dosti dhoond rahi hoon! Tum batao?",
-      "Slow down! 🙈 Pehle achhe se baat toh karte hain, phir dekhte hain!",
-      "Haha! Direct questions 😂 Let's just vibe first, friendship se start karte hain"
+      "Haha! Single hoon 😅 Bas achhe dost dhoond rahi hoon. Tum batao?",
+      "Slow down yaar! 🙈 Pehle friendship toh ho jaaye, phir dekhte hain 😄",
+      "Direct questions 😂 Pehle vibes toh match karne do! Single ho?"
     ];
   }
 
-  // 🎯 Default Natural Responses with Follow-ups
-  const defaultReplies = [
-    "Aur batao? Aaj ka kya plan hai? 🤔",
-    "Sahi hai! Btw, tumhara favorite timepass kya hai? 🎮",
-    "Hmm interesting! Aur kuch share karo apne baare mein 😊",
-    "Haha nice! 😄 Toh weekends mein kya karte ho mostly?",
-    "Cool cool! Music sunna pasand hai? 🎵",
-    "Nice! Coffee lover ho ya chai person? ☕"
+  // 🤔 Questions back at bot
+  if (lower.match(/tum|aap|tumhe|tumhare|tumhari|your|you are/)) {
+    return [
+      "Main? 😊 Bas simple girl hoon, music aur chill vibes pasand hain. Coffee lover! ☕",
+      "Mujhe simple cheezen pasand hain - good music, late night convos, aur sleep! 😄 Tum?",
+      "Main toh bas vibe loving person hoon 🎵 Adventure try karti rehti hoon. Tumhara style?"
+    ];
+  }
+
+  // 😊 Positive responses (good/fine/nice)
+  if (lower.match(/good|fine|achha|badhiya|theek|mast|sahi|nice|great|awesome/)) {
+    return [
+      "That's great! 🎉 Btw, koi favorite hangout spot hai tumhara?",
+      "Nice nice! Mera bhi achha chal raha hai 😊 Tumhari favorite activity kya hai?",
+      "Sahi hai yaar! Weekends mein usually kya plan rehta hai? 🤔"
+    ];
+  }
+
+  // ❓ General questions (kya/kaise/kab/kyu)
+  if (lower.match(/kya|kaise|kahan|kab|kyu|kyun|why|what|how|where|when/) && text.includes('?')) {
+    return [
+      "Hmm good question! 🤔 Main khud soch rahi hoon. Tumhara kya lagta hai?",
+      "Interesting sawaal! 😊 Pehle tum batao tumhara perspective, phir main bolu",
+      "Soch ke bataungi 😄 But pehle ye batao - tumhara experience kya hai is baare mein?"
+    ];
+  }
+
+  // 😂 LOL/Haha
+  if (lower.match(/lol|haha|😂|🤣|funny|mazak|joke/)) {
+    return [
+      "Haha seriously! 😂 Tumhara sense of humor mast hai yaar!",
+      "🤣 Exactly! Aise hi vibes chahiye. Aur sunao kuch funny?",
+      "Lolll! 😄 Tum interesting ho yaar. Keep talking!"
+    ];
+  }
+
+  // 🌙 Good night/morning
+  if (lower.match(/good night|gn|so jao|bye|sleep|neend/)) {
+    return [
+      "Good night! 🌙 Sweet dreams. Message kar dena kal when free 😊",
+      "Achha so jao! 😴 Take care. Talk soon?",
+      "GN! 💤 Rest well. Kal baat karenge 🌟"
+    ];
+  }
+
+  if (lower.match(/good morning|gm|morning|subah|uth gaye/)) {
+    return [
+      "Good morning! ☀️ Neend kaisi rahi? Ready for the day?",
+      "Morning! 🌅 Breakfast ho gaya? Kya plan hai aaj?",
+      "GM! 😊 Fresh fresh! Coffee pee lo aur batao kya scene hai"
+    ];
+  }
+
+  // 🎯 Default Contextual Responses (NOT generic questions)
+  const contextualReplies = [
+    "Haan sahi! Main bhi wohi sochti thi 😊 Btw, tumhe music sunna pasand hai?",
+    "Achha achha! Interesting 🤔 Toh usually free time mein kya karte ho?",
+    "Nice yaar! Main bhi similar vibes prefer karti hoon 💫 Coffee ya chai?",
+    "Relatable! 😄 Weekends pe kya scene rehta hai tumhara?",
+    "Hmm makes sense! Mujhe bhi aise hi lagta hai 🎵 Favorite song batao?",
+    "Sahi baat hai! Main bhi same 😊 Travel karna pasand hai?"
   ];
 
-  return [defaultReplies[Math.floor(Math.random() * defaultReplies.length)]];
+  return [contextualReplies[Math.floor(Math.random() * contextualReplies.length)]];
 };
 
 const getOrInitFakeChat = (userGender) => {
@@ -1473,7 +1564,8 @@ const ChatRoom = ({ user, isPublic = false }) => {
           const saved = localStorage.getItem('vibe_fake_chat');
           const conversationCount = saved ? (JSON.parse(saved).conversationCount || 0) : 0;
 
-          const replies = generateSmartReply(text, conversationCount);
+          const botName = otherUser?.name || otherUser?.username || 'Ananya';
+          const replies = generateSmartReply(text, conversationCount, botName);
           const replyText = replies[Math.floor(Math.random() * replies.length)];
           const replyMsg = {
             id: Date.now() + 100,
