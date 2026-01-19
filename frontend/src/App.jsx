@@ -550,31 +550,31 @@ const Feed = ({ onMessage }) => {
   useEffect(() => {
     // 1. Fetch real profiles (if any exist in backend)
     api.getProfiles().then(res => {
-      // 2. Generate PREMIUM fake posts to supplement
+      // 2. Generate PREMIUM fake posts to supplement (Strictly Dating/Chill Vibes)
       const fakePosts = Array.from({ length: 50 }, (_, i) => ({
         id: `fake-${i}`,
         username: REAL_NAMES[i % REAL_NAMES.length],
-        location: ['Mumbai, India', 'New York, USA', 'London, UK', 'Dubai, UAE', 'Goa, India'][i % 5],
+        location: ['Vibe Club 🥂', 'Late Night Drive 🏎️', 'Gym 💪', 'Beach Sunset 🏖️', 'Coffee Date ☕'][i % 5],
         profile_pic: REAL_AVATARS[i % REAL_AVATARS.length], // REAL FACES
-        image: VIBE_IMAGES[i % VIBE_IMAGES.length], // REAL VIBES
+        image: VIBE_IMAGES[i % VIBE_IMAGES.length], // GUARANTEED PREMIUM IMAGE
         bio: ['Just chillin 🌊', 'Living my best life ✨', 'Music is life 🎵', 'Dream big 🚀', 'Good vibes only ✌️'][i % 5],
         age: 20 + (i % 10),
         likes: Math.floor(Math.random() * 5000) + 100
       }));
 
-      // 3. SANITIZE backend data: If backend data has generic names or likely broken images, REPLACE them with premium data
+      // 3. SANITIZE backend data: Force overwrite broken/generic content
       const sanitizedBackendPosts = (res.data || []).map((p, i) => ({
         ...p,
-        // Override Generic Names - AGGRESSIVE: Replace anything starting with vibe_ or user, OR just random generic vibe names
+        // Override Generic Names
         username: (p.username && (p.username.startsWith('user') || p.username.startsWith('vibe_'))) ? REAL_NAMES[(i + 10) % REAL_NAMES.length] : p.username,
-        // Override Likely Broken/Generic Images
-        image: (!p.image || p.image.includes('dicebear') || p.image.includes('source.unsplash')) ? VIBE_IMAGES[(i + 5) % VIBE_IMAGES.length] : p.image,
+        // FORCE PREMIUM IMAGES: Ignore user uploads for now to guarantee aesthetic (unless verified)
+        image: VIBE_IMAGES[i % VIBE_IMAGES.length],
         // Override Generic Avatars
         profile_pic: p.profile_pic || REAL_AVATARS[(i + 3) % REAL_AVATARS.length]
       }));
 
-      // Merge sanitized real and fake, shuffling slightly or putting real first
-      setPosts([...sanitizedBackendPosts, ...fakePosts]);
+      // Merge and Shuffle
+      setPosts([...sanitizedBackendPosts, ...fakePosts].sort(() => 0.5 - Math.random()));
       setLoading(false);
     }).catch(err => {
       console.log("Using pure localized premium data");
@@ -679,7 +679,8 @@ const Reels = ({ onMessage }) => {
   const [reels] = useState(() => generateMockReels(100));
   const videoRefs = useRef({});
   const containerRef = useRef(null);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(true); // User starts muted (Browser Policy)
+  const [activeReelId, setActiveReelId] = useState(null);
 
   // Intersection Observer to Auto-Play/Pause
   useEffect(() => {
@@ -690,12 +691,23 @@ const Reels = ({ onMessage }) => {
 
     const handleIntersection = (entries) => {
       entries.forEach(entry => {
-        const video = videoRefs.current[entry.target.dataset.id];
+        const reelId = entry.target.dataset.id;
+        const video = videoRefs.current[reelId];
         if (!video) return;
 
         if (entry.isIntersecting) {
+          setActiveReelId(reelId);
           video.currentTime = 0; // Restart for loop effect
-          video.play().catch(e => console.log("Autoplay prevented:", e));
+          // Attempt play (may fail if unmuted and no interaction)
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              // Auto-play policy blocked
+              setMuted(true);
+              video.muted = true;
+              video.play();
+            });
+          }
         } else {
           video.pause();
         }
@@ -731,6 +743,7 @@ const Reels = ({ onMessage }) => {
 
   const toggleMute = (e) => {
     e.stopPropagation();
+    // Global Unmute - Unmutes ALL videos to ensure seamless scrolling experience
     setMuted(prev => !prev);
   }
 
@@ -752,72 +765,73 @@ const Reels = ({ onMessage }) => {
               loop
               muted={muted}
               playsInline
-              preload="metadata"
+              preload="auto"
             />
             {/* Dark Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/90 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/95 pointer-events-none"></div>
 
             {/* Play/Pause/Mute Indicator Overlay */}
-            <button onClick={toggleMute} className="absolute top-20 right-4 z-30 p-2 bg-black/50 rounded-full backdrop-blur-md border border-white/10">
+            <button onClick={toggleMute} className="absolute top-16 right-4 z-40 p-2 bg-black/40 rounded-full backdrop-blur-md border border-white/10 hover:bg-black/60 transition">
               {muted ? <div className="text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg></div>
                 : <div className="text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div>}
             </button>
           </div>
 
           {/* 🎵 Music Disc Animation (Bottom Right) */}
-          <div className="absolute bottom-20 right-4 z-20 pointer-events-none">
-            <div className="w-12 h-12 rounded-full bg-gray-900 border-4 border-gray-800 flex items-center justify-center animate-spin-slow overflow-hidden shadow-lg shadow-black/50">
-              <img src={r.avatar} className="w-full h-full object-cover opacity-80" />
+          <div className="absolute bottom-6 right-4 z-20 pointer-events-none">
+            <div className={`w-12 h-12 rounded-full bg-gray-900 border-[3px] border-black flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.8)] ${activeReelId === r.id ? 'animate-spin-slow' : ''}`}>
+              <img src={r.avatar} className="w-full h-full object-cover opacity-90 p-1 rounded-full" />
             </div>
-            <div className="absolute -bottom-2 -right-2 transform -rotate-12">
-              <Music size={16} className="text-white drop-shadow-lg" />
+            <div className="absolute -bottom-3 -right-3 transform -rotate-12 bg-black/50 p-1 rounded-full border border-white/10 backdrop-blur">
+              <Music size={12} className="text-white drop-shadow-md" />
+            </div>
+            {/* Flying Notes */}
+            <div className="absolute bottom-8 right-2 flex flex-col gap-4 opacity-0 animate-fly-notes">
+              <Music size={14} className="text-white/60" />
             </div>
           </div>
 
           {/* 📝 User Info (Bottom Left) */}
-          <div className="absolute bottom-20 left-4 right-16 text-white z-20 text-left pointer-events-none">
+          <div className="absolute bottom-4 left-4 right-16 text-white z-20 text-left pointer-events-none w-[75%]">
             <div className="flex items-center gap-3 mb-3 pointer-events-auto">
-              <div className="w-11 h-11 rounded-full border-2 border-white/80 p-[2px] bg-clip-border bg-gradient-to-tr from-yellow-400 to-purple-600 shadow-lg">
-                <img src={r.avatar} className="w-full h-full rounded-full object-cover bg-black" />
+              <div className="w-9 h-9 rounded-full border border-white/80 p-[1px] shadow-lg cursor-pointer hover:scale-110 transition">
+                <img src={r.avatar} className="w-full h-full rounded-full object-cover" />
               </div>
-              <span className="font-black text-white text-base drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-wide shadow-black">{r.user}</span>
-              <button className="text-xs border border-white/40 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md font-bold hover:bg-white/20 transition shadow-lg">Follow</button>
+              <span className="font-bold text-white text-sm drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-wide">{r.user}</span>
+              <button className="text-[10px] border border-white/50 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-md font-bold hover:bg-white/25 transition shadow-sm">Follow</button>
             </div>
 
-            <p className="text-sm drop-shadow-md mb-3 line-clamp-2 font-medium opacity-95 leading-relaxed">{r.desc} <span className="text-cyan-400 font-bold">#vibe #trending</span></p>
+            <p className="text-sm drop-shadow-md mb-4 line-clamp-2 font-medium opacity-95 leading-snug">{r.desc}</p>
 
-            <div className="flex items-center gap-2 text-xs opacity-90 bg-black/40 w-fit px-4 py-2 rounded-full backdrop-blur-md border border-white/10 shadow-lg">
-              <Music size={14} className="animate-pulse text-cyan-400" />
-              <div className="overflow-hidden w-40 whitespace-nowrap">
-                <span className="animate-shine inline-block font-medium">Original Audio • {r.user} • VibeTalk Exclusive</span>
+            <div className="flex items-center gap-2 text-xs opacity-90 bg-transparent w-full overflow-hidden">
+              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5">
+                <Music size={12} className="text-white" />
+                <div className="overflow-hidden w-[150px] relative">
+                  <span className="inline-block whitespace-nowrap animate-marquee font-medium">Original Audio • {r.user} • Yash Vibe • Trending Sound</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* ❤️ Interaction Sidebar (Right) */}
-          <div className="absolute bottom-36 right-2 flex flex-col items-center gap-6 text-white z-20 pointer-events-auto">
-            <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDoubleTap(e); }}>
-              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
-                <Heart size={32} className="group-hover:text-red-500 transition drop-shadow-2xl" />
-              </div>
-              <span className="text-xs font-bold drop-shadow-lg">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
+          <div className="absolute bottom-24 right-2 flex flex-col items-center gap-5 text-white z-20 pointer-events-auto">
+            <div className="flex flex-col items-center gap-0.5 group cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDoubleTap(e); }}>
+              <Heart size={30} strokeWidth={1.5} className="group-hover:scale-110 transition drop-shadow-lg filter shadow-black" />
+              <span className="text-[11px] font-bold drop-shadow-md">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={(e) => { e.stopPropagation(); onMessage(r.user); }}>
-              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
-                <MessageCircle size={32} className="group-hover:text-blue-400 transition drop-shadow-2xl -scale-x-100" />
-              </div>
-              <span className="text-xs font-bold drop-shadow-lg">1.2k</span>
+            <div className="flex flex-col items-center gap-0.5 group cursor-pointer" onClick={(e) => { e.stopPropagation(); onMessage(r.user); }}>
+              <MessageCircle size={30} strokeWidth={1.5} className="group-hover:scale-110 transition drop-shadow-lg -scale-x-100" />
+              <span className="text-[11px] font-bold drop-shadow-md">1.2k</span>
             </div>
 
-            <div className="flex flex-col items-center gap-1 group cursor-pointer">
-              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
-                <Send size={32} className="group-hover:text-green-400 transition drop-shadow-2xl transform -rotate-12" />
-              </div>
+            <div className="flex flex-col items-center gap-0.5 group cursor-pointer">
+              <Send size={30} strokeWidth={1.5} className="group-hover:scale-110 transition drop-shadow-lg transform -rotate-12" />
+              <span className="text-[11px] font-bold drop-shadow-md">Share</span>
             </div>
 
-            <div className="group cursor-pointer">
-              <MoreVertical size={24} className="opacity-80 drop-shadow-xl" />
+            <div className="group cursor-pointer mt-2">
+              <MoreVertical size={24} className="opacity-90 drop-shadow-lg" />
             </div>
           </div>
         </div>

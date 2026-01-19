@@ -700,3 +700,51 @@ select.input-field {
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;
 }
+
+/* Music Notes Flying Animation */
+@keyframes fly-notes {
+  0% {
+    transform: translateY(0) translateX(0) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-40px) translateX(-20px) scale(1.5) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-fly-notes {
+  animation: fly-notes 2s infinite ease-out;
+}
+
+/* Marquee for Audio Ticker */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 8s linear infinite;
+  padding-left: 100%;
+  /* Start from outside */
+}
+
+/* Hide Scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
