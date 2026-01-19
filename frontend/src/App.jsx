@@ -1295,8 +1295,8 @@ const ChatRoom = ({ user, isPublic = false }) => {
 
   // Fetch Logic
   const loadMessages = async () => {
-    // Safety check for invalid/undefined ID
-    if (!id || id === 'undefined' || id === 'null') return;
+    // Safety check for invalid/undefined ID or 'new' placeholder
+    if (!id || id === 'undefined' || id === 'null' || id === 'new') return;
 
     // Skip backend call for BOT
     if (id === 'bot') {
