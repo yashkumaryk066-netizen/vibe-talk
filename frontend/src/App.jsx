@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Search, MessageCircle, User, Heart, Send, ArrowLeft, MoreVertical, Edit3, LogOut, Mic, Square, X, Check, Flame, Globe, Camera, Plus, Image, Upload, ChevronDown, Save, Bookmark, Music } from 'lucide-react';
+import { Search, MessageCircle, User, Heart, Send, ArrowLeft, MoreVertical, Edit3, LogOut, Mic, Square, X, Check, Flame, Globe, Camera, Plus, Image, Upload, ChevronDown, Save, Bookmark, Music, Phone, Video } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import * as api from './api';
