@@ -1021,6 +1021,17 @@ const MessagesList = ({ navigate, activeUser }) => {
   const [loading, setLoading] = useState(true);
   const userGender = localStorage.getItem('vibe_user_gender') || 'Male';
 
+  // Vibe Assistant Item (define before useEffect)
+  const vibeBot = {
+    id: 'bot',
+    user: 'bot',
+    username: 'Vibe Assistant',
+    name: 'Vibe Assistant',
+    profile_pic: null,
+    isFake: true,
+    last_message: "Welcome to VibeTalk! 🛡️"
+  };
+
   useEffect(() => {
     api.getMatches().then(res => {
       // Inject Fake Chat Logic
@@ -1046,16 +1057,7 @@ const MessagesList = ({ navigate, activeUser }) => {
     }).catch(e => setLoading(false));
   }, []);
 
-  // Vibe Assistant Item
-  const vibeBot = {
-    id: 'bot',
-    user: 'bot',
-    username: 'Vibe Assistant',
-    name: 'Vibe Assistant',
-    profile_pic: null,
-    isFake: true,
-    last_message: "Welcome to VibeTalk! 🛡️"
-  };
+
 
   return (
     <div className="screen pb-20 pt-14">
@@ -1098,7 +1100,7 @@ const MessagesList = ({ navigate, activeUser }) => {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold text-sm block">{p.name || REAL_NAMES[p.id % REAL_NAMES.length]}</h4>
-                  <p className="text-xs opacity-60">Tap to chat • Now</p>
+                  <p className="text-xs opacity-60">{p.last_message || p.lastMessage || "Tap to chat • Now"}</p>
                 </div>
                 <Camera size={20} className="opacity-50" />
               </div>
