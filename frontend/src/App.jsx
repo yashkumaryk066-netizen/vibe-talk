@@ -1356,7 +1356,7 @@ const ChatRoom = ({ user, isPublic = false }) => {
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || !id || id === 'undefined') return;
     try {
       // Mock Send for BOT
       if (id !== 'bot') {
