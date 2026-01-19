@@ -1449,15 +1449,59 @@ const ChatsList = ({ user }) => {
 // ... (Previous components like ChatList, Matches etc. remain above) 
 
 const MainApp = ({ user, userData, onLogout, onUpdate }) => {
-  const [activeTab, setActiveTab] = useState('feed');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTabState] = useState('feed'); // Internal state for animation/rendering
   const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
 
+  // Sync URL -> Tab
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/discover') setActiveTabState('search');
+    else if (path === '/rooms') setActiveTabState('rooms');
+    else if (path === '/reels') setActiveTabState('reels');
+    else if (path === '/chats') setActiveTabState('messages');
+    else if (path === '/matches') setActiveTabState('matches');
+    else if (path === '/profile') setActiveTabState('profile');
+    else if (path.startsWith('/public-chat/')) setActiveTabState('rooms'); // Sub-route
+    else if (path.startsWith('/chats/')) setActiveTabState('messages'); // Sub-route
+    else setActiveTabState('feed');
+  }, [location.pathname]);
+
+  // Wrapper to Navigate instead of just setting state
+  const setActiveTab = (tab) => {
+    if (tab === 'feed') navigate('/');
+    else if (tab === 'search') navigate('/discover');
+    else if (tab === 'rooms') navigate('/rooms');
+    else if (tab === 'reels') navigate('/reels');
+    else if (tab === 'messages') navigate('/chats');
+    else if (tab === 'matches') navigate('/matches');
+    else if (tab === 'profile') navigate('/profile');
+    else navigate('/');
+  };
+
   const renderContent = () => {
+    // If we are in a sub-route like /chats/:id, we should probably render the specific component or handle it in the Switch
+    // But since the original design used a Switch, let's keep it simple.
+
+    // Special handling for sub-routes if they are not full pages in Router but overlay
+    if (location.pathname.startsWith('/chats/') && location.pathname !== '/chats') {
+      // This implies we are inside a chat. 
+      // We can return <ChatRoom /> here directly via Router or pass props?
+      // The original code had <ChatRoom> in Routes? No, it was single page.
+      return <ChatRoom user={user} />;
+    }
+    if (location.pathname.startsWith('/public-chat/')) {
+      return <ChatRoom user={user} isPublic={true} />;
+    }
+
     switch (activeTab) {
-      case 'feed': return <Feed onMessage={(u) => setActiveTab('messages')} />;
+      case 'feed': return <Feed onMessage={() => navigate('/chats')} />;
       case 'search': return <AdvancedSearch user={user} />;
-      case 'reels': return <Reels onMessage={(u) => setActiveTab('messages')} />;
-      case 'messages': return <MessagesList activeUser={user} navigate={setActiveTab} />;
+      case 'rooms': return <PublicRooms />;
+      case 'reels': return <Reels onMessage={() => navigate('/chats')} />;
+      case 'messages': return <MessagesList activeUser={user} navigate={navigate} />;
+      case 'matches': return <div className="screen center-content p-4 text-center"><Heart size={48} className="text-red-500 mb-2 animate-bounce" /><h2 className="text-xl font-bold">Matches</h2><p className="opacity-50">You're too popular! (Coming Soon)</p></div>; // Premium Placeholder
       case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
       default: return <Feed />;
     }
