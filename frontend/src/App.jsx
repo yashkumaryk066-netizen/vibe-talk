@@ -1274,10 +1274,10 @@ const FAKE_REPLIES = {
 // --- 💬 Premium Instagram-Style Chat with FAKE USER LOGIC ---
 const ChatRoom = ({ user, isPublic = false }) => {
   const params = useParams();
-  // Fallback: Extract ID from URL if Route params fail (due to custom MainApp navigation)
-  const id = params.id || location.pathname.split('/chats/')[1]?.split('/')[0] || location.pathname.split('/public-chat/')[1]?.split('/')[0];
   const location = useLocation();
   const navigate = useNavigate();
+  // Fallback: Extract ID from URL if Route params fail (due to custom MainApp navigation)
+  const id = params.id || location.pathname.split('/chats/')[1]?.split('/')[0] || location.pathname.split('/public-chat/')[1]?.split('/')[0];
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
