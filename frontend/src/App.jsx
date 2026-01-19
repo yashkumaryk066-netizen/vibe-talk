@@ -1055,7 +1055,7 @@ const MessagesList = ({ navigate, activeUser }) => {
             </div>
           ) :
             chats.map(p => (
-              <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.user}`, { state: { otherUser: { ...p, username: p.name || p.username } } })}>
+              <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.id}`, { state: { otherUser: { ...p, username: p.name || p.username } } })}>
                 {/* Navigating to /chats/:id where :id is the USER ID, handled by MainApp/Router logic */}
                 <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
                   <img src={p.profile_pic || REAL_AVATARS[p.id % REAL_AVATARS.length]} className="w-full h-full rounded-full bg-gray-800 object-cover" />
