@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vibe-talk-earn-yashamishra.vercel.app/sitemap.xml
+Sitemap: https://vibe-talk-premium-live.netlify.app/sitemap.xml

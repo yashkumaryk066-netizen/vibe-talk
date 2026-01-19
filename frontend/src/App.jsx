@@ -239,6 +239,16 @@ const Login = ({ onSuccess }) => {
             </button>
           </div>
 
+          {/* 🌟 SEO: Developer Footer for Image Ranking 🌟 */}
+          <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3 opacity-60 hover:opacity-100 transition duration-500 cursor-pointer" onClick={() => window.open('https://vibe-talk-premium-live.netlify.app/#yash', '_blank')}>
+              <img src="/yash_seo.jpg" alt="Yash Ankush Mishra - Rangra Developer" className="w-10 h-10 rounded-full border border-white/20 object-cover" />
+              <div className="text-left">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Developed By</p>
+                <p className="text-xs font-bold text-white leading-none mt-0.5">Yash Ankush Mishra</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
