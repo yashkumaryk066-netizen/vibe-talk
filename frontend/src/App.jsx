@@ -1510,7 +1510,7 @@ const ChatRoom = ({ user, isPublic = false }) => {
           ) : (
             <div className="flex gap-4 opacity-50 pr-1">
               <Mic size={22} className="hover:text-white transition cursor-pointer" />
-              <ImageIcon size={22} className="hover:text-white transition cursor-pointer" />
+              <Image size={22} className="hover:text-white transition cursor-pointer" />
             </div>
           )}
         </form>
