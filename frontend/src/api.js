@@ -45,11 +45,18 @@ export const getRooms = () => api.get('/rooms/');
 
 // Supports Private OR Public rooms
 export const getMessages = (roomId, isPublic = false) => {
+    // Safety: Return empty data for invalid/placeholder IDs to prevent 500 server errors
+    if (!roomId || roomId === 'new' || roomId === 'undefined' || roomId === 'null') {
+        return Promise.resolve({ data: [] });
+    }
     const param = isPublic ? `public_room=${roomId}` : `room=${roomId}`;
     return api.get(`/messages/?${param}`);
 }
 
 export const sendMessage = (roomId, content, isPublic = false) => {
+    // Safety: Prevent sending to invalid IDs
+    if (!roomId || roomId === 'new' || roomId === 'undefined') return Promise.reject("Invalid Room ID");
+
     const idKey = isPublic ? 'public_room' : 'room';
 
     if (content instanceof FormData) {
