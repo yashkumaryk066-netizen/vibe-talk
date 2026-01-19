@@ -11,14 +11,8 @@ const REAL_NAMES = [
     "Prisha", "Riya", "Saanvi", "Samaira", "Sara", "Shanaya", "Sneha", "Vanya", "Zara", "Zoya"
 ];
 const REAL_AVATARS = [
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=60",
-    "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop&q=60"
+    ...Array.from({ length: 45 }, (_, i) => `https://randomuser.me/api/portraits/women/${i}.jpg`),
+    ...Array.from({ length: 45 }, (_, i) => `https://randomuser.me/api/portraits/men/${i}.jpg`)
 ];
 
 const AdvancedSearch = ({ user }) => {

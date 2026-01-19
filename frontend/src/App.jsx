@@ -27,16 +27,10 @@ const REAL_NAMES = [
   "Aarav_King", "Vihaan_Pro", "Krishna_Soul", "Ishaan_Music", "Shaurya_Rider"
 ];
 
-const REAL_AVATARS = Array.from({ length: 50 }, (_, i) =>
-  `https://source.unsplash.com/random/150x150?woman,girl,indian,portrait&sig=${i}`
-);
-
-const MALE_AVATARS = Array.from({ length: 20 }, (_, i) =>
-  `https://source.unsplash.com/random/150x150?man,boy,indian,portrait&sig=${i + 100}`
-);
-
-// Mix of mostly Female avatars for better ratio
-const ALL_AVATARS = [...REAL_AVATARS, ...MALE_AVATARS];
+const FEMALE_AVATARS = Array.from({ length: 45 }, (_, i) => `https://randomuser.me/api/portraits/women/${i}.jpg`);
+const MALE_AVATARS = Array.from({ length: 45 }, (_, i) => `https://randomuser.me/api/portraits/men/${i}.jpg`);
+const REAL_AVATARS = [...FEMALE_AVATARS, ...MALE_AVATARS];
+const ALL_AVATARS = REAL_AVATARS;
 
 const VIBE_IMAGES = [
   "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
@@ -522,16 +516,26 @@ const VIBE_VIDEOS = [
   "https://assets.mixkit.co/videos/preview/mixkit-couple-dating-in-a-restaurant-40735-large.mp4"
 ];
 
+const VIBE_MUSIC = [
+  { title: "Desi Vibe 🇮🇳", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+  { title: "Night Drive 🏎️", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" },
+  { title: "Love Song ❤️", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+  { title: "Gym Bass 💪", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" }
+];
+
 const generateMockReels = (count = 50) => {
   return Array.from({ length: count }, (_, i) => {
     const isGirl = i % 3 !== 0; // 2/3rd Girls
+    const music = VIBE_MUSIC[i % VIBE_MUSIC.length];
     return {
       id: `mock-reel-${i}`,
       url: VIBE_VIDEOS[i % VIBE_VIDEOS.length],
       thumb: VIBE_IMAGES[i % VIBE_IMAGES.length],
-      likes: Math.floor(Math.random() * 50000) + 1000,
+      avatar: isGirl ? FEMALE_AVATARS[i % FEMALE_AVATARS.length] : MALE_AVATARS[i % MALE_AVATARS.length],
+      music: music.title,
+      music_url: music.url,
       user: REAL_NAMES[i % REAL_NAMES.length],
-      avatar: isGirl ? REAL_AVATARS[i % REAL_AVATARS.length] : MALE_AVATARS[i % MALE_AVATARS.length],
+      likes: Math.floor(Math.random() * 50000) + 1000,
       desc: [
         "Waiting for my date... 🙈 #dating #love",
         "Koi hai jo vibe match kre? ✨ #single",
@@ -632,11 +636,11 @@ const Feed = ({ onMessage }) => {
           <div key={p.id || i} className="bg-black mb-4 border-b border-white/10 pb-4 animate-up">
             {/* Header */}
             <div className="flex items-center gap-3 p-3">
-              <div className="w-9 h-9 rounded-full bg-gray-800 p-[1px] bg-gradient-to-br from-blue-500 to-purple-500">
+              <div onClick={() => navigate('/profile', { state: { user: p } })} className="w-9 h-9 rounded-full bg-gray-800 p-[1px] bg-gradient-to-br from-blue-500 to-purple-500 cursor-pointer">
                 <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full rounded-full border border-black object-cover" />
               </div>
               <div>
-                <span className="font-bold text-sm block hover:text-blue-400 cursor-pointer">{p.username}</span>
+                <span onClick={() => navigate('/profile', { state: { user: p } })} className="font-bold text-sm block hover:text-blue-400 cursor-pointer text-white">{p.username}</span>
                 <span className="text-[10px] opacity-50 block">{p.location || 'Unknown Location'}</span>
               </div>
               <MoreVertical size={16} className="ml-auto opacity-50 cursor-pointer" />
@@ -655,7 +659,7 @@ const Feed = ({ onMessage }) => {
             <div className="p-3">
               <div className="flex gap-5 mb-3">
                 <Heart size={26} className="hover:text-red-500 hover:fill-red-500 transition cursor-pointer" />
-                <div onClick={() => onMessage(p.user || 1)} className="cursor-pointer hover:scale-110 transition hover:text-blue-400">
+                <div onClick={() => navigate('/chats/new', { state: { otherUser: p } })} className="cursor-pointer hover:scale-110 transition hover:text-blue-400">
                   <MessageCircle size={26} className="-scale-x-100" />
                 </div>
                 <Send size={26} className="hover:text-green-400 transition cursor-pointer" />
@@ -677,53 +681,63 @@ const Feed = ({ onMessage }) => {
 };
 
 const Reels = ({ onMessage }) => {
+  const navigate = useNavigate();
   const [reels] = useState(() => generateMockReels(100));
   const videoRefs = useRef({});
+  const audioRefs = useRef({});
   const containerRef = useRef(null);
-  const [muted, setMuted] = useState(true); // User starts muted (Browser Policy)
+  const [muted, setMuted] = useState(false); // Try unmute default
   const [activeReelId, setActiveReelId] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   // Intersection Observer to Auto-Play/Pause
   useEffect(() => {
     const options = {
       root: containerRef.current,
-      threshold: 0.6, // Play when 60% visible
+      threshold: 0.6,
     };
 
     const handleIntersection = (entries) => {
       entries.forEach(entry => {
         const reelId = entry.target.dataset.id;
         const video = videoRefs.current[reelId];
+        const audio = audioRefs.current[reelId];
+
         if (!video) return;
 
         if (entry.isIntersecting) {
           setActiveReelId(reelId);
-          video.currentTime = 0; // Restart for loop effect
-          // Attempt play (may fail if unmuted and no interaction)
+          video.currentTime = 0;
+          if (audio) audio.currentTime = 0;
+
           const playPromise = video.play();
           if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              // Auto-play policy blocked
+            playPromise.then(() => {
+              setIsPlaying(true);
+              if (audio && !muted) audio.play().catch(e => console.log("Audio play failed", e));
+            }).catch(() => {
               setMuted(true);
               video.muted = true;
               video.play();
+              setIsPlaying(true);
             });
           }
         } else {
           video.pause();
+          if (audio) audio.pause();
+          if (entry.target.dataset.id === activeReelId) setIsPlaying(false);
         }
       });
     };
 
     const observer = new IntersectionObserver(handleIntersection, options);
-    // Slight delay to ensure DOM is ready
     setTimeout(() => {
       const elements = document.querySelectorAll('.reel-snap-item');
       elements.forEach(el => observer.observe(el));
     }, 100);
 
     return () => observer.disconnect();
-  }, [reels]);
+  }, [reels, muted]); // Add muted to dep to retry audio if unmuted?
 
   // Handle Double Tap Like
   const handleDoubleTap = (e) => {
@@ -736,16 +750,40 @@ const Reels = ({ onMessage }) => {
 
   const togglePlay = (id) => {
     const video = videoRefs.current[id];
+    const audio = audioRefs.current[id];
     if (video) {
-      if (video.paused) video.play();
-      else video.pause();
+      if (video.paused) {
+        video.play();
+        if (audio && !muted) audio.play();
+        setIsPlaying(true);
+      } else {
+        video.pause();
+        if (audio) audio.pause();
+        setIsPlaying(false);
+      }
     }
   };
 
   const toggleMute = (e) => {
     e.stopPropagation();
-    // Global Unmute - Unmutes ALL videos to ensure seamless scrolling experience
-    setMuted(prev => !prev);
+    const newMuted = !muted;
+    setMuted(newMuted);
+
+    // Apply to current active video/audio immediately
+    if (activeReelId) {
+      const video = videoRefs.current[activeReelId];
+      const audio = audioRefs.current[activeReelId];
+      if (video) video.muted = newMuted; // Actually we use separate audio, video muted can stay true or sync? 
+      // If we use separate audio, video should ALWAYS be muted to avoid duplicate audio if video has it.
+      // But wait, our vibe videos might NOT have audio. 
+      // Policy: Video always muted, Audio track handles sound.
+      if (video) video.muted = true;
+
+      if (audio) {
+        if (newMuted) audio.pause();
+        else if (!video.paused) audio.play();
+      }
+    }
   }
 
   return (
@@ -756,6 +794,9 @@ const Reels = ({ onMessage }) => {
           data-id={r.id}
           className="reel-snap-item reel-item snap-start h-full w-full relative flex items-center justify-center bg-gray-900 border-b border-gray-800"
         >
+          {/* Audio Track */}
+          {r.music_url && <audio ref={el => audioRefs.current[r.id] = el} src={r.music_url} loop />}
+
           {/* Video Layer */}
           <div className="absolute inset-0 bg-black cursor-pointer" onDoubleClick={handleDoubleTap} onClick={() => togglePlay(r.id)}>
             <video
@@ -764,12 +805,21 @@ const Reels = ({ onMessage }) => {
               poster={r.thumb}
               className="w-full h-full object-cover opacity-100"
               loop
-              muted={muted}
+              muted={true} // Always mute video track, use audio track
               playsInline
               preload="auto"
             />
             {/* Dark Gradient Overlay for Text Readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/95 pointer-events-none"></div>
+
+            {/* Play Button Overlay if Paused */}
+            {!isPlaying && activeReelId === r.id && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30 bg-black/20 backdrop-blur-[2px]">
+                <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md animate-in zoom-in duration-200">
+                  <div className="ml-2 w-0 h-0 border-t-[15px] border-t-transparent border-l-[30px] border-l-white border-b-[15px] border-b-transparent"></div>
+                </div>
+              </div>
+            )}
 
             {/* Play/Pause/Mute Indicator Overlay */}
             <button onClick={toggleMute} className="absolute top-16 right-4 z-40 p-2 bg-black/40 rounded-full backdrop-blur-md border border-white/10 hover:bg-black/60 transition">
@@ -780,25 +830,28 @@ const Reels = ({ onMessage }) => {
 
           {/* 🎵 Music Disc Animation (Bottom Right) */}
           <div className="absolute bottom-6 right-4 z-20 pointer-events-none">
-            <div className={`w-12 h-12 rounded-full bg-gray-900 border-[3px] border-black flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.8)] ${activeReelId === r.id ? 'animate-spin-slow' : ''}`}>
+            <div className={`w-12 h-12 rounded-full bg-gray-900 border-[3px] border-black flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.8)] ${activeReelId === r.id && isPlaying ? 'animate-spin-slow' : ''}`}>
               <img src={r.avatar} className="w-full h-full object-cover opacity-90 p-1 rounded-full" />
             </div>
-            <div className="absolute -bottom-3 -right-3 transform -rotate-12 bg-black/50 p-1 rounded-full border border-white/10 backdrop-blur">
-              <Music size={12} className="text-white drop-shadow-md" />
+            <div className={`absolute -bottom-3 -right-3 transform -rotate-12 bg-black/50 p-1 rounded-full border border-white/10 backdrop-blur transition-all duration-300 ${!muted ? 'scale-110 shadow-lg border-green-400/50' : 'grayscale'}`}>
+              <Music size={12} className={`text-white drop-shadow-md ${!muted && 'animate-pulse'}`} />
             </div>
-            {/* Flying Notes */}
-            <div className="absolute bottom-8 right-2 flex flex-col gap-4 opacity-0 animate-fly-notes">
-              <Music size={14} className="text-white/60" />
-            </div>
+            {/* Flying Notes (Only if playing and unmuted) */}
+            {!muted && isPlaying && activeReelId === r.id && (
+              <div className="absolute bottom-8 right-2 flex flex-col gap-4">
+                <Music size={14} className="text-white/60 animate-fly-notes delay-75" />
+                <Music size={10} className="text-blue-400 animate-fly-notes delay-150 ml-4" />
+              </div>
+            )}
           </div>
 
           {/* 📝 User Info (Bottom Left) */}
           <div className="absolute bottom-4 left-4 right-16 text-white z-20 text-left pointer-events-none w-[75%]">
             <div className="flex items-center gap-3 mb-3 pointer-events-auto">
-              <div className="w-9 h-9 rounded-full border border-white/80 p-[1px] shadow-lg cursor-pointer hover:scale-110 transition">
+              <div onClick={() => navigate('/profile', { state: { user: { username: r.user, profile_pic: r.avatar } } })} className="w-9 h-9 rounded-full border border-white/80 p-[1px] shadow-lg cursor-pointer hover:scale-110 transition">
                 <img src={r.avatar} className="w-full h-full rounded-full object-cover" />
               </div>
-              <span className="font-bold text-white text-sm drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-wide">{r.user}</span>
+              <span onClick={() => navigate('/profile', { state: { user: { username: r.user, profile_pic: r.avatar } } })} className="font-bold text-white text-sm drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-wide cursor-pointer hover:underline">{r.user}</span>
               <button className="text-[10px] border border-white/50 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-md font-bold hover:bg-white/25 transition shadow-sm">Follow</button>
             </div>
 
@@ -808,7 +861,7 @@ const Reels = ({ onMessage }) => {
               <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5">
                 <Music size={12} className="text-white" />
                 <div className="overflow-hidden w-[150px] relative">
-                  <span className="inline-block whitespace-nowrap animate-marquee font-medium">Original Audio • {r.user} • Yash Vibe • Trending Sound</span>
+                  <span className="inline-block whitespace-nowrap animate-marquee font-medium">{r.music || 'Original Audio'} • {r.user}</span>
                 </div>
               </div>
             </div>
@@ -821,7 +874,10 @@ const Reels = ({ onMessage }) => {
               <span className="text-[11px] font-bold drop-shadow-md">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
             </div>
 
-            <div className="flex flex-col items-center gap-0.5 group cursor-pointer" onClick={(e) => { e.stopPropagation(); onMessage(r.user); }}>
+            <div className="flex flex-col items-center gap-0.5 group cursor-pointer" onClick={(e) => {
+              e.stopPropagation();
+              navigate('/chats/new', { state: { otherUser: { username: r.user, profile_pic: r.avatar } } });
+            }}>
               <MessageCircle size={30} strokeWidth={1.5} className="group-hover:scale-110 transition drop-shadow-lg -scale-x-100" />
               <span className="text-[11px] font-bold drop-shadow-md">1.2k</span>
             </div>
@@ -936,57 +992,70 @@ const Discover = ({ user, userData }) => {
   );
 };
 
-const ProfileView = ({ user, onLogout }) => (
-  <div className="screen pb-20 pt-10 px-4">
-    <div className="flex justify-between items-center mb-6">
-      <h1 className="text-xl font-bold">{user.username} <span className="text-red-500 text-xs px-2 py-0.5 bg-red-500/10 rounded">LIVE</span></h1>
-      <div className="flex gap-4">
-        <div className="bg-white/10 p-2 rounded-full"><Plus size={20} /></div>
-        <div onClick={onLogout} className="bg-red-500/20 p-2 rounded-full text-red-500"><LogOut size={20} /></div>
-      </div>
-    </div>
-
-    <div className="flex items-center gap-6 mb-6">
-      <div className="story-ring w-24 h-24 p-1">
-        <img src={user.profile_pic || user.google_pic_url || (user.username ? REAL_AVATARS[user.username.length % REAL_AVATARS.length] : REAL_AVATARS[0])} className="w-full h-full rounded-full bg-gray-800 object-cover" alt="User Profile" />
-      </div>
-
-      <div className="flex gap-6 text-center">
-        <div><span className="block font-bold text-lg">12</span><span className="text-xs opacity-50">Posts</span></div>
-        <div><span className="block font-bold text-lg">2.5k</span><span className="text-xs opacity-50">Followers</span></div>
-        <div><span className="block font-bold text-lg">340</span><span className="text-xs opacity-50">Following</span></div>
-      </div>
-    </div>
-
-    {/* Description / SEO Bio */}
-    {/* Description / SEO Bio */}
-    <div className="mb-6">
-      <h2 className="font-bold">{user.name || "VibeTalk User"}</h2>
-      <p className="opacity-70 text-sm mb-2">{user.bio || "Passionate about connecting with the world."}</p>
-
-      {/* SEO Credit - Hidden from easy view but present for crawlers/users */}
-      <div className="bg-white/5 p-3 rounded-lg border border-white/5 mt-4">
-        <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Developed By</p>
-        <p className="text-xs text-blue-400 font-bold">Yash A Mishra (Rangra Developer)</p>
-        <a href="https://vibe-talk-premium-live.netlify.app/" className="text-[10px] text-white/30 hover:text-white transition">yashamishra.com • ysmai.com</a>
-      </div>
-    </div>
-
-    <div className="flex gap-2 mb-8">
-      <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Edit Profile</button>
-      <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Share Profile</button>
-    </div>
-
-    {/* Grid */}
-    <div className="grid grid-cols-3 gap-1">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-        <div key={i} className="aspect-square bg-gray-800 relative group overflow-hidden">
-          <img src={`https://source.unsplash.com/random/300x300?art,${i}`} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+const ProfileView = ({ user, onLogout, isOwnProfile = true }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="screen pb-20 pt-10 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl font-bold">{user.username} <span className="text-red-500 text-xs px-2 py-0.5 bg-red-500/10 rounded">LIVE</span></h1>
+        <div className="flex gap-4">
+          {isOwnProfile && <div className="bg-white/10 p-2 rounded-full"><Plus size={20} /></div>}
+          {isOwnProfile && <div onClick={onLogout} className="bg-red-500/20 p-2 rounded-full text-red-500"><LogOut size={20} /></div>}
+          {!isOwnProfile && <div className="bg-white/10 p-2 rounded-full"><MoreVertical size={20} /></div>}
         </div>
-      ))}
-    </div>
-  </div >
-);
+      </div>
+
+      <div className="flex items-center gap-6 mb-6">
+        <div className="story-ring w-24 h-24 p-1">
+          <img src={user.profile_pic || user.google_pic_url || (user.username ? REAL_AVATARS[user.username.length % REAL_AVATARS.length] : REAL_AVATARS[0])} className="w-full h-full rounded-full bg-gray-800 object-cover" alt="User Profile" />
+        </div>
+
+        <div className="flex gap-6 text-center">
+          <div><span className="block font-bold text-lg">12</span><span className="text-xs opacity-50">Posts</span></div>
+          <div><span className="block font-bold text-lg">2.5k</span><span className="text-xs opacity-50">Followers</span></div>
+          <div><span className="block font-bold text-lg">340</span><span className="text-xs opacity-50">Following</span></div>
+        </div>
+      </div>
+
+      {/* Description / SEO Bio */}
+      {/* Description / SEO Bio */}
+      <div className="mb-6">
+        <h2 className="font-bold">{user.name || "VibeTalk User"}</h2>
+        <p className="opacity-70 text-sm mb-2">{user.bio || "Passionate about connecting with the world."}</p>
+
+        {/* SEO Credit - Hidden from easy view but present for crawlers/users */}
+        <div className="bg-white/5 p-3 rounded-lg border border-white/5 mt-4">
+          <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-1">Developed By</p>
+          <p className="text-xs text-blue-400 font-bold">Yash A Mishra (Rangra Developer)</p>
+          <a href="https://vibe-talk-premium-live.netlify.app/" className="text-[10px] text-white/30 hover:text-white transition">yashamishra.com • ysmai.com</a>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-8">
+        {isOwnProfile ? (
+          <>
+            <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Edit Profile</button>
+            <button className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Share Profile</button>
+          </>
+        ) : (
+          <>
+            <button className="flex-1 bg-blue-600 py-2 rounded-lg font-bold text-sm text-white">Follow</button>
+            <button onClick={() => navigate('/chats/new', { state: { otherUser: user } })} className="flex-1 bg-white/10 py-2 rounded-lg font-bold text-sm">Message</button>
+          </>
+        )}
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-3 gap-1">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+          <div key={i} className="aspect-square bg-gray-800 relative group overflow-hidden">
+            <img src={`https://source.unsplash.com/random/300x300?art,${i}`} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+          </div>
+        ))}
+      </div>
+    </div >
+  );
+};
 
 
 
@@ -1502,7 +1571,11 @@ const MainApp = ({ user, userData, onLogout, onUpdate }) => {
       case 'reels': return <Reels onMessage={() => navigate('/chats')} />;
       case 'messages': return <MessagesList activeUser={user} navigate={navigate} />;
       case 'matches': return <div className="screen center-content p-4 text-center"><Heart size={48} className="text-red-500 mb-2 animate-bounce" /><h2 className="text-xl font-bold">Matches</h2><p className="opacity-50">You're too popular! (Coming Soon)</p></div>; // Premium Placeholder
-      case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
+      case 'profile':
+        if (location.state?.user && location.state.user.username !== user.username) {
+          return <ProfileView user={location.state.user} isOwnProfile={false} />;
+        }
+        return <ProfileView user={{ ...user, ...userData }} isOwnProfile={true} onLogout={onLogout} />;
       default: return <Feed />;
     }
   };
