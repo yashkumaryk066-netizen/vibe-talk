@@ -43,15 +43,35 @@ const VIBE_IMAGES = [
   "https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=800&q=80"
 ];
 
-// --- 🤖 PREMIUM FAKE PROFILES & LOGIC ---
+// --- 🤖 PREMIUM FAKE PROFILES POOL (12 per gender) ---
 const FAKE_PROFILES = {
   Male: [
-    { name: 'Kabir', username: 'kabir_vibes', bio: 'Gym & Late night drives 🏎️', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
-    { name: 'Aryan', username: 'aryan_cool', bio: 'Tech & Music 🎧', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' }
+    { name: 'Kabir', username: 'kabir_vibes', bio: 'Gym freak 💪 & Late night drives 🏎️', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
+    { name: 'Aryan', username: 'aryan_cool', bio: 'Tech geek 💻 Music lover 🎧', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' },
+    { name: 'Rohan', username: 'rohan_explorer', bio: 'Travel junkie ✈️ Foodie 🍕', avatar: 'https://randomuser.me/api/portraits/men/22.jpg' },
+    { name: 'Aditya', username: 'aditya_gamer', bio: 'Gaming pro 🎮 Netflix addict 📺', avatar: 'https://randomuser.me/api/portraits/men/33.jpg' },
+    { name: 'Vivaan', username: 'vivaan_artist', bio: 'Photographer 📸 Coffee enthusiast ☕', avatar: 'https://randomuser.me/api/portraits/men/41.jpg' },
+    { name: 'Reyansh', username: 'rey_sports', bio: 'Cricket lover 🏏 Fitness freak 🏃', avatar: 'https://randomuser.me/api/portraits/men/52.jpg' },
+    { name: 'Aarav', username: 'aarav_chill', bio: 'Chill vibes only 🌴 Musician 🎸', avatar: 'https://randomuser.me/api/portraits/men/18.jpg' },
+    { name: 'Vihaan', username: 'vihaan_rider', bio: 'Bike lover 🏍️ Adventure seeker 🎯', avatar: 'https://randomuser.me/api/portraits/men/67.jpg' },
+    { name: 'Ayush', username: 'ayush_dev', bio: 'Code & Coffee ☕💻 Anime fan 🍜', avatar: 'https://randomuser.me/api/portraits/men/28.jpg' },
+    { name: 'Siddharth', username: 'sid_fitness', bio: 'Gym bro 💪 Protein shakes 🥤', avatar: 'https://randomuser.me/api/portraits/men/71.jpg' },
+    { name: 'Dhruv', username: 'dhruv_night', bio: 'Night owl 🦉 EDM lover 🎵', avatar: 'https://randomuser.me/api/portraits/men/15.jpg' },
+    { name: 'Karan', username: 'karan_vlogger', bio: 'Content creator 🎬 Traveler 🌍', avatar: 'https://randomuser.me/api/portraits/men/64.jpg' }
   ],
   Female: [
-    { name: 'Ananya', username: 'ananya_cute', bio: 'Coffee & Sunsets ☕', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
-    { name: 'Riya', username: 'riya_xx', bio: 'Dancer 💃 Vibes only', avatar: 'https://randomuser.me/api/portraits/women/63.jpg' }
+    { name: 'Ananya', username: 'ananya_cute', bio: 'Coffee & Sunsets ☕🌅 Book lover 📚', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+    { name: 'Riya', username: 'riya_dancer', bio: 'Dancer 💃 Vibes only ✨', avatar: 'https://randomuser.me/api/portraits/women/63.jpg' },
+    { name: 'Kiara', username: 'kiara_fashionista', bio: 'Fashion blogger 👗 Makeup artist 💄', avatar: 'https://randomuser.me/api/portraits/women/32.jpg' },
+    { name: 'Diya', username: 'diya_artist', bio: 'Painter 🎨 Nature lover 🌿', avatar: 'https://randomuser.me/api/portraits/women/21.jpg' },
+    { name: 'Aadhya', username: 'aadhya_singer', bio: 'Singing is life 🎤 Music vibes 🎵', avatar: 'https://randomuser.me/api/portraits/women/55.jpg' },
+    { name: 'Saanvi', username: 'saanvi_gymgirl', bio: 'Fitness queen 💪 Yoga enthusiast 🧘', avatar: 'https://randomuser.me/api/portraits/women/68.jpg' },
+    { name: 'Myra', username: 'myra_foodie', bio: 'Foodie 🍕 Travel junkie ✈️', avatar: 'https://randomuser.me/api/portraits/women/17.jpg' },
+    { name: 'Pari', username: 'pari_gamer', bio: 'Girl gamer 🎮 Anime lover 🍜', avatar: 'https://randomuser.me/api/portraits/women/41.jpg' },
+    { name: 'Aisha', username: 'aisha_photographer', bio: 'Photography 📷 Sunset chaser 🌇', avatar: 'https://randomuser.me/api/portraits/women/72.jpg' },
+    { name: 'Kavya', username: 'kavya_bookworm', bio: 'Bookworm 📖 Tea > Coffee 🍵', avatar: 'https://randomuser.me/api/portraits/women/28.jpg' },
+    { name: 'Ishita', username: 'ishita_traveler', bio: 'Wanderlust soul 🌍 Beach lover 🏖️', avatar: 'https://randomuser.me/api/portraits/women/50.jpg' },
+    { name: 'Zara', username: 'zara_nightowl', bio: 'Night owl 🌙 Late night talks 💬', avatar: 'https://randomuser.me/api/portraits/women/65.jpg' }
   ]
 };
 
