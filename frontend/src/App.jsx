@@ -1283,8 +1283,8 @@ const ChatRoom = ({ user, isPublic = false }) => {
 
   // Determine Room Name/Info
   const roomData = location.state?.room;
-  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null, isFake: false };
-  const isFakeUser = otherUser.isFake || otherUser.username === 'Vibe Assistant';
+  const otherUser = location.state?.otherUser || (id === 'bot' ? { username: 'Vibe Assistant', isFake: true, profile_pic: null } : { username: 'Vibe User', profile_pic: null, isFake: false });
+  const isFakeUser = otherUser.isFake || otherUser.username === 'Vibe Assistant' || id === 'bot';
   const chatTitle = isPublic ? (roomData?.name || 'Public Room') : (otherUser.username || "Vibe Match");
   const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username || 'user'}`);
 
