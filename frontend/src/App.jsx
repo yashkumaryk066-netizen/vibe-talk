@@ -1367,16 +1367,28 @@ const ChatRoom = ({ user, isPublic = false }) => {
     if (!id || id === 'undefined' || id === 'null' || id === 'new') return;
 
     // Skip backend call for BOT
+    // 🤖 BOT HANDLING
     if (id === 'bot') {
       const botMsgs = [
         { id: 1, text: "Welcome to VibeTalk! 🛡️ I'm here to guide you.", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 10000).toISOString() },
         { id: 2, text: "Tap call button to try our Voice feature 📞", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 5000).toISOString() }
       ];
-      // Only set initial if empty
-      if (messages.length === 0 && !isTyping) {
-        setMessages(botMsgs);
-      }
+      if (messages.length === 0 && !isTyping) setMessages(botMsgs);
       return;
+    }
+
+    // 🎭 FAKE USER HANDLING (Client-Side Only)
+    if (String(id).startsWith('fake_')) {
+      // Load from localStorage to keep sync
+      const saved = localStorage.getItem('vibe_fake_chat');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Ensure we are loading the correct fake chat
+        if (`fake_${parsed.username}` === id) {
+          setMessages(parsed.msgs || []);
+        }
+      }
+      return; // ⛔ STOP: Do not call API
     }
 
     try {
@@ -1389,34 +1401,13 @@ const ChatRoom = ({ user, isPublic = false }) => {
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 2000);
-
-    // 🎭 FAKE USER: Initial Greeting Trigger
-    if (isFakeUser && messages.length === 0 && id !== 'bot') {
-      const timer = setTimeout(() => {
-        setIsTyping(true);
-        setTimeout(() => {
-          const greeting = otherUser.username === 'Vibe Assistant'
-            ? "Welcome to VibeTalk! 🛡️ I'm here to guide you. Tap 'Call' to start vibing safely."
-            : FAKE_REPLIES.greeter[Math.floor(Math.random() * FAKE_REPLIES.greeter.length)];
-
-          // Manually inject message for fake user (Simulating backend)
-          const fakeMsg = {
-            id: Date.now(),
-            text: greeting,
-            sender_name: otherUser.username,
-            created_at: new Date().toISOString()
-          };
-
-          setMessages(prev => [...prev, fakeMsg]);
-          setIsTyping(false);
-        }, 3000);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-
+    const interval = setInterval(loadMessages, 1000); // Faster sync for local sim
     return () => clearInterval(interval);
-  }, [id, messages.length, isFakeUser]);
+  }, [id, messages.length, isFakeUser]); // Re-run if ID checks
+
+  // (Removed redundant 'Initial Greeting' logic - handled by getOrInitFakeChat)
+
+
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
