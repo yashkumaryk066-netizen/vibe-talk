@@ -134,18 +134,24 @@ const Login = ({ onSuccess }) => {
         <div className="glass neon-border bg-black/40 backdrop-blur-3xl rounded-[35px] p-8 md:p-10 relative overflow-hidden flex flex-col items-center border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
           {/* Logo Section - EXACT MATCH */}
-          <div className="mb-8 flex flex-col items-center justify-center relative w-full">
+          <div className="mb-6 flex flex-col items-center justify-center relative w-full">
             <h1 className="text-5xl font-black tracking-tight font-outfit text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 drop-shadow-[0_0_25px_rgba(0,210,255,0.6)] mb-2">
               VibeTalk
             </h1>
 
+            {/* 🟢 Live Users Indicator */}
+            <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full border border-white/5 backdrop-blur-md animate-pulse-slow">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]"></div>
+              <span className="text-[10px] font-bold text-white/80 tracking-wide">1,240+ Active Now</span>
+            </div>
+
             {/* Animated Sound Wave */}
-            <div className="flex items-center justify-center gap-1.5 h-8">
-              <div className="w-1.5 bg-cyan-400 rounded-full animate-wave h-4"></div>
-              <div className="w-1.5 bg-blue-500 rounded-full animate-wave h-8" style={{ animationDelay: '0.1s' }}></div>
-              <div className="w-1.5 bg-purple-500 rounded-full animate-wave h-6" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-1.5 bg-pink-500 rounded-full animate-wave h-8" style={{ animationDelay: '0.3s' }}></div>
-              <div className="w-1.5 bg-cyan-400 rounded-full animate-wave h-4" style={{ animationDelay: '0.4s' }}></div>
+            <div className="flex items-center justify-center gap-1.5 h-8 mt-2 opacity-50">
+              <div className="w-1 bg-cyan-400 rounded-full animate-wave h-3"></div>
+              <div className="w-1 bg-blue-500 rounded-full animate-wave h-6" style={{ animationDelay: '0.1s' }}></div>
+              <div className="w-1 bg-purple-500 rounded-full animate-wave h-4" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-1 bg-pink-500 rounded-full animate-wave h-6" style={{ animationDelay: '0.3s' }}></div>
+              <div className="w-1 bg-cyan-400 rounded-full animate-wave h-3" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </div>
 
@@ -199,6 +205,14 @@ const Login = ({ onSuccess }) => {
               />
             </div>
 
+            {/* 18+ Checkbox */}
+            <div className="flex items-start gap-2 px-1">
+              <input type="checkbox" id="age-confirm" required className="mt-1 w-3 h-3 accent-cyan-500" />
+              <label htmlFor="age-confirm" className="text-[10px] text-white/50 leading-tight">
+                I confirm I am <b>18+ years old</b>. I agree to the <span className="text-white/70 underline">Terms</span> & <span className="text-white/70 underline">Safety Policy</span>.
+              </label>
+            </div>
+
             {/* Main Gradient Button */}
             <button
               disabled={loading}
@@ -213,6 +227,9 @@ const Login = ({ onSuccess }) => {
                 isSignup ? "Start Your Vibe" : "Sign In"
               )}
             </button>
+            <p className="text-[10px] text-center text-white/40 font-medium tracking-wide">
+              18+ Only • Anonymous • Safety First • No Recording
+            </p>
 
             {/* Google Button - Custom Design with Functional OAuth Iframe */}
             <div className="relative w-full">
@@ -604,11 +621,26 @@ const Feed = ({ onMessage }) => {
       <div className="flex justify-between items-center p-4 sticky top-0 bg-black/90 backdrop-blur z-20 border-b border-white/5">
         <h1 className="font-outfit text-2xl font-black italic tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">VibeTalk</h1>
         <div className="flex gap-4">
-          <Heart size={24} />
-          <div className="relative">
+          <button onClick={() => navigate('/matches')} className="p-1 hover:bg-white/10 rounded-full transition active:scale-95">
+            <Heart size={24} />
+          </button>
+          <button onClick={() => navigate('/chats')} className="p-1 hover:bg-white/10 rounded-full transition active:scale-95 relative">
             <MessageCircle size={24} />
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-          </div>
+            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-black"></div>
+          </button>
+        </div>
+      </div>
+
+      {/* 🛡️ SAFETY QUICK BAR (User Confidence) */}
+      <div className="bg-white/5 px-4 py-2 flex justify-between items-center border-b border-white/5">
+        <div className="flex items-center gap-2 text-[10px] opacity-60">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+          1,240+ Online
+        </div>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-1 text-[10px] text-white/50"><div className="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center text-red-500"><X size={8} /></div> Block</div>
+          <div className="flex items-center gap-1 text-[10px] text-white/50"><div className="w-4 h-4 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500"><Flame size={8} /></div> Report</div>
+          <div className="flex items-center gap-1 text-[10px] text-white/50"><div className="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500"><Globe size={8} /></div> Safe</div>
         </div>
       </div>
 
@@ -909,30 +941,52 @@ const MessagesList = ({ navigate, activeUser }) => {
     }).catch(e => setLoading(false));
   }, []);
 
+  // Vibe Assistant Item
+  const vibeBot = {
+    id: 'bot',
+    user: 'bot',
+    username: 'Vibe Assistant',
+    name: 'Vibe Assistant',
+    profile_pic: null,
+    isFake: true,
+    last_message: "Welcome to VibeTalk! 🛡️"
+  };
+
   return (
     <div className="screen pb-20 pt-14">
       <div className="fixed top-0 w-full p-4 glass z-10 flex justify-between items-center">
-        <h1 className="font-bold text-xl flex items-center gap-1">{activeUser?.username} <span className="text-xs opacity-50">▼</span></h1>
+        <h1 className="font-bold text-xl flex items-center gap-1">Messages <span className="text-xs opacity-50">({chats.length + 1})</span></h1>
         <Edit3 size={24} />
       </div>
 
-      <div className="px-4 py-2">
+      <div className="px-4 py-2 mt-2">
         <div className="bg-white/10 p-2 rounded-lg flex items-center gap-2 text-white/50 text-sm">
-          <Search size={16} /> Search
+          <Search size={16} /> Search chats...
         </div>
       </div>
 
-      <div className="flex flex-col overflow-y-auto pb-20">
-        {loading ? <div className="p-4 text-center opacity-50">Loading chats...</div> :
+      <div className="flex flex-col overflow-y-auto pb-20 mt-1">
+        {/* ALWAYS SHOW VIBE BOT */}
+        <div className="chat-item bg-blue-500/5 mb-1 border-l-2 border-blue-500" onClick={() => navigate(`/chats/${vibeBot.user}`, { state: { otherUser: vibeBot, room: { name: 'Vibe Assistant' } } })}>
+          <div className="story-ring w-14 h-14 p-0.5 border-none bg-blue-500/20 rounded-full flex items-center justify-center">
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=VibeAssistant`} className="w-full h-full rounded-full bg-black object-cover" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-bold text-sm flex items-center gap-1">Vibe Assistant <span className="bg-blue-500 text-[8px] px-1 rounded text-white overflow-hidden">OFFICIAL</span></h4>
+            <p className="text-xs text-blue-400 font-medium">Tap for help & safety tips</p>
+          </div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+        </div>
+
+        {loading ? <div className="p-4 text-center opacity-50">Loading matches...</div> :
           chats.length === 0 ? (
             <div className="p-8 text-center opacity-50 flex flex-col items-center">
               <MessageCircle size={48} className="mb-2" />
-              <p>No messages yet.</p>
-              <p className="text-xs">Start a chat from the Home Feed!</p>
+              <p>No other messages yet.</p>
             </div>
           ) :
             chats.map(p => (
-              <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.user}`)}>
+              <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.user}`, { state: { otherUser: { ...p, username: p.name || p.username } } })}>
                 {/* Navigating to /chats/:id where :id is the USER ID, handled by MainApp/Router logic */}
                 <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
                   <img src={p.profile_pic || REAL_AVATARS[p.id % REAL_AVATARS.length]} className="w-full h-full rounded-full bg-gray-800 object-cover" />
@@ -1187,41 +1241,108 @@ const PublicRooms = () => {
 };
 
 // --- 💬 Premium Instagram-Style Chat ---
-// --- 💬 Premium Instagram-Style Chat ---
+// --- 🎭 FAKE USER ENGINE (Premium Feature) ---
+const FAKE_REPLIES = {
+  greeter: [
+    "Hey! 👋 Welcome to VibeTalk.",
+    "Hi there! Kaha se ho aap? 😄",
+    "Yo! New here? Voice call try kiya? 🎧",
+    "Namaste! 🙏 Vibe match karein?"
+  ],
+  icebreaker: [
+    "Truth or Dare kheloge? 😉",
+    "Night owl ho ya Morning person? 🦉",
+    "Favorite song konsa hai aajkal? 🎵",
+    "Tea or Coffee? choose wisely ☕",
+    "Agar ek superpower milti, toh kya hoti?"
+  ],
+  support: [
+    "Safety tip: Kabhi bhi apna private number share mat karna. 🛡️",
+    "Agar koi tang kare toh upar 'Report' button hai. 🚩",
+    "Voice connect kaise karna hai batau? 📞"
+  ],
+  general: [
+    "Haha sahi hai! 😂",
+    "Voice call pe connect karein? Jyada maza aayega 🎧",
+    "Acha? Fir kya hua?",
+    "Hmm interesting... tell me more!",
+    "Message me bore ho raha hu, call? 📞"
+  ]
+};
+
+// --- 💬 Premium Instagram-Style Chat with FAKE USER LOGIC ---
 const ChatRoom = ({ user, isPublic = false }) => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const [isTyping, setIsTyping] = useState(false); // Frontend Simulation of Typing
+  const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
   // Determine Room Name/Info
   const roomData = location.state?.room;
-  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null };
+  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null, isFake: false };
+  const isFakeUser = otherUser.isFake || otherUser.username === 'Vibe Assistant';
   const chatTitle = isPublic ? (roomData?.name || 'Public Room') : (otherUser.username || "Vibe Match");
   const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username || 'user'}`);
 
+  // Auto-Unlocking logic (Premium)
+  const [isLocked, setIsLocked] = useState(false); // Can be set based on logic, keeping unlocked for now as User preferred Call Connect -> Unlock, but we simulate unlocked for specific flows.
+
   // Fetch Logic
   const loadMessages = async () => {
+    // Skip backend call for BOT
+    if (id === 'bot') {
+      const botMsgs = [
+        { id: 1, text: "Welcome to VibeTalk! 🛡️ I'm here to guide you.", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 10000).toISOString() },
+        { id: 2, text: "Tap call button to try our Voice feature 📞", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 5000).toISOString() }
+      ];
+      // Only set initial if empty
+      if (messages.length === 0 && !isTyping) {
+        setMessages(botMsgs);
+      }
+      return;
+    }
+
     try {
       const res = await api.getMessages(id, isPublic);
       const newMsgs = res.data;
-
-      // If we have new messages and we were "typing", stop typing
-      if (newMsgs.length > messages.length) {
-        setIsTyping(false);
-      }
+      if (newMsgs.length > messages.length) setIsTyping(false);
       setMessages(newMsgs);
     } catch (err) { console.error(err); }
   };
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 2000); // Poll every 2s for "Real-time" feel
+    const interval = setInterval(loadMessages, 2000);
+
+    // 🎭 FAKE USER: Initial Greeting Trigger
+    if (isFakeUser && messages.length === 0 && id !== 'bot') {
+      const timer = setTimeout(() => {
+        setIsTyping(true);
+        setTimeout(() => {
+          const greeting = otherUser.username === 'Vibe Assistant'
+            ? "Welcome to VibeTalk! 🛡️ I'm here to guide you. Tap 'Call' to start vibing safely."
+            : FAKE_REPLIES.greeter[Math.floor(Math.random() * FAKE_REPLIES.greeter.length)];
+
+          // Manually inject message for fake user (Simulating backend)
+          const fakeMsg = {
+            id: Date.now(),
+            text: greeting,
+            sender_name: otherUser.username,
+            created_at: new Date().toISOString()
+          };
+
+          setMessages(prev => [...prev, fakeMsg]);
+          setIsTyping(false);
+        }, 3000);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+
     return () => clearInterval(interval);
-  }, [id, messages.length]); // Dep on length to detect changes
+  }, [id, messages.length, isFakeUser]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1231,18 +1352,50 @@ const ChatRoom = ({ user, isPublic = false }) => {
     e.preventDefault();
     if (!text.trim()) return;
     try {
-      await api.sendMessage(id, text, isPublic);
-      setText('');
-      loadMessages(); // Show my message immediately
+      // Mock Send for BOT
+      if (id !== 'bot') {
+        await api.sendMessage(id, text, isPublic);
+      }
 
-      // SIMULATE REALISM: 
-      // 1. Wait 2-4 seconds (thinking)
-      // 2. Show "Typing..."
-      // 3. Backend will deliver message in ~10s, which polling will catch
-      if (!isPublic) {
+      const myMsg = { id: Date.now(), text, sender_name: user.username, created_at: new Date().toISOString() };
+      setMessages(prev => [...prev, myMsg]);
+      setText('');
+
+      // 🎭 FAKE USER: Intelligent Reply System
+      if (!isPublic && isFakeUser) {
+        // 1. Random delay 10s - 20s
+        const replyDelay = Math.random() * 5000 + 2000; // Faster for testing
+
         setTimeout(() => {
           setIsTyping(true);
-        }, Math.random() * 2000 + 2000);
+
+          // 2. Typing for 2-4s
+          setTimeout(() => {
+            let replyText;
+            if (otherUser.username === 'Vibe Assistant') { // Bot Logic
+              const lower = text.toLowerCase();
+              if (lower.includes('report') || lower.includes('safe') || lower.includes('block')) replyText = FAKE_REPLIES.support[1];
+              else if (lower.includes('call') || lower.includes('voice')) replyText = FAKE_REPLIES.support[2];
+              else replyText = "I'm a bot! For real connections, go to the 'Search' tab and find a vibe match! 🚀";
+            } else {
+              // Random Vibes
+              const categories = ['general', 'icebreaker'];
+              if (text.length < 5) categories.push('greeter');
+              const cat = categories[Math.floor(Math.random() * categories.length)];
+              replyText = FAKE_REPLIES[cat][Math.floor(Math.random() * FAKE_REPLIES[cat].length)];
+            }
+
+            const fakeMsg = {
+              id: Date.now(),
+              text: replyText,
+              sender_name: otherUser.username,
+              created_at: new Date().toISOString()
+            };
+            setMessages(prev => [...prev, fakeMsg]);
+            setIsTyping(false);
+          }, 2000); // 2s typing
+
+        }, replyDelay);
       }
 
     } catch (e) { toast.error("Failed to send"); }
@@ -1255,15 +1408,16 @@ const ChatRoom = ({ user, isPublic = false }) => {
         <ArrowLeft size={24} className="mr-4 cursor-pointer hover:scale-110 transition" onClick={() => navigate(-1)} />
 
         {!isPublic && (
-          <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border-2 border-green-500 p-0.5">
+          <div className={`w-10 h-10 rounded-full overflow-hidden mr-3 border-2 p-0.5 ${otherUser.username === 'Vibe Assistant' ? 'border-blue-500' : 'border-green-500'}`}>
             <img src={chatAvatar} className="w-full h-full object-cover rounded-full bg-gray-800" />
+            {otherUser.username === 'Vibe Assistant' && <div className="absolute bottom-3 left-12 w-4 h-4 bg-blue-500 border-2 border-black rounded-full flex items-center justify-center text-[8px] font-bold">✓</div>}
           </div>
         )}
 
         <div className="flex-1 cursor-pointer">
           <h3 className="font-bold text-base leading-tight flex items-center gap-1">{chatTitle} {isPublic && <span className="bg-red-500 text-[8px] px-1 rounded text-white font-bold">LIVE</span>}</h3>
           {!isPublic ? (
-            <span className="text-xs text-green-400 font-medium">Online now</span>
+            <span className={`text-xs font-medium ${otherUser.username === 'Vibe Assistant' ? 'text-blue-400' : 'text-green-400'}`}>{otherUser.username === 'Vibe Assistant' ? 'Official Bot' : 'Online now'}</span>
           ) : (
             <span className="text-xs text-white/50">{Math.floor(Math.random() * 200) + 10} vibing</span>
           )}
@@ -1280,11 +1434,11 @@ const ChatRoom = ({ user, isPublic = false }) => {
         {/* Welcome Placeholder */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center opacity-40 mt-32 animate-in fade-in zoom-in duration-500">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center mb-4 text-5xl shadow-[0_0_30px_rgba(0,210,255,0.4)]">
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 text-5xl shadow-[0_0_30px_rgba(0,0,0,0.4)] ${otherUser.username === 'Vibe Assistant' ? 'bg-blue-600 shadow-blue-500/40' : 'bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-cyan-500/40'}`}>
               <img src={chatAvatar} className="w-22 h-22 rounded-full opacity-80" />
             </div>
-            <p className="font-bold text-lg">It's a Match! 🔥</p>
-            <p className="text-xs opacity-70">Don't be shy, say hi.</p>
+            <p className="font-bold text-lg">{otherUser.username === 'Vibe Assistant' ? 'Vibe Assistant' : "It's a Match! 🔥"}</p>
+            <p className="text-xs opacity-70">{otherUser.username === 'Vibe Assistant' ? 'Here to help & guide you.' : "Don't be shy, say hi."}</p>
           </div>
         )}
 
@@ -1296,7 +1450,7 @@ const ChatRoom = ({ user, isPublic = false }) => {
             <div key={i} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
               {!isMe && (
                 <div className={`w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 self-end mb-1 ${!showAvatar && 'opacity-0'}`}>
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} className="w-full h-full object-cover" />
+                  <img src={otherUser.username === 'Vibe Assistant' ? chatAvatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} className="w-full h-full object-cover" />
                 </div>
               )}
 
@@ -1345,9 +1499,10 @@ const ChatRoom = ({ user, isPublic = false }) => {
         <form onSubmit={handleSend} className="flex-1 bg-[#121212] rounded-full flex items-center px-5 py-3 border border-white/10 focus-within:border-blue-500/50 transition shadow-inner">
           <input
             className="bg-transparent border-none outline-none text-base text-white flex-1 placeholder-zinc-500"
-            placeholder="Message..."
+            placeholder={isLocked ? "Chat locked (Connect Voice First)" : "Message..."}
             value={text}
             onChange={e => setText(e.target.value)}
+            disabled={isLocked}
           />
           {text.trim() ? (
             <button type="submit" className="text-blue-500 font-bold text-sm ml-2 hover:text-blue-400 transition">Send</button>
@@ -1492,36 +1647,62 @@ const ProfilePage = ({ user, userData, onLogout, onUpdate }) => {
 
 
 const ChatsList = ({ user }) => {
-  const [rooms, setRooms] = useState([]);
-  const navigate = useNavigate();
-  useEffect(() => {
-    api.getRooms().then(res => setRooms(res.data));
-  }, []);
-  const getOther = (r) => r.user1_name === user.username ? r.user2_name : r.user1_name;
-
-  return (
-    <div className="screen pb-20">
-      <h1 className="text-center mt-4 mb-6">Chats</h1>
-      {rooms.map(r => (
-        <div key={r.id} className="glass card p-4 mb-3 flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/chats/${r.id}`, { state: { room: r, otherUser: getOther(r) } })}>
-          <div className="avatar w-12 h-12 text-lg">{getOther(r)[0]}</div>
-          <div>
-            <h3 className="font-bold">{getOther(r)}</h3>
-            <p className="text-xs opacity-50">Private Chat</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
+  // Empty wrapper to keep existing definition but generally unused as MessagesList is the main one now
+  return null;
 }
 
-// ... (Previous components like ChatList, Matches etc. remain above) 
+
+
+// --- 🚀 Onboarding / Intro Modal (New User Flow) ---
+const IntroModal = ({ onClose }) => {
+  const [step, setStep] = useState(1);
+
+  const nextStep = () => {
+    if (step < 3) setStep(step + 1);
+    else onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-6 animate-in fade-in">
+      <div className="w-full max-w-sm bg-[#121212] rounded-3xl border border-white/10 p-8 text-center relative overflow-hidden">
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-white/10 flex">
+          <div className={`h-full bg-purple-500 transition-all duration-500 ${step === 1 ? 'w-1/3' : step === 2 ? 'w-2/3' : 'w-full'}`}></div>
+        </div>
+
+        <div className="mb-6 mt-4 flex justify-center">
+          {step === 1 && <div className="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center animate-bounce"><User size={48} className="text-purple-500" /></div>}
+          {step === 2 && <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center animate-pulse"><Flame size={48} className="text-red-500" /></div>}
+          {step === 3 && <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center animate-bounce"><Check size={48} className="text-green-500" /></div>}
+        </div>
+
+        <h2 className="text-2xl font-black font-outfit mb-2">
+          {step === 1 && "Stay Anonymous 🎭"}
+          {step === 2 && "Safety First 🛡️"}
+          {step === 3 && "You're Ready! 🚀"}
+        </h2>
+        <p className="text-white/60 mb-8 text-sm leading-relaxed">
+          {step === 1 && "No phone numbers, no real names required. Chat freely but respectfully. Your privacy is our priority."}
+          {step === 2 && "Zero tolerance for harassment. You can Block, Report, or Mute anyone instantly. Keep the vibe check passed!"}
+          {step === 3 && "Start matching with people nearby or globally. Confirm you are 18+ and ready to vibe?"}
+        </p>
+
+        <button onClick={nextStep} className="w-full py-3.5 rounded-xl bg-white text-black font-bold text-lg hover:bg-gray-200 transition">
+          {step === 3 ? "Let's Go!" : "Next"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ... (Previous components) 
 
 const MainApp = ({ user, userData, onLogout, onUpdate }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTabState] = useState('feed'); // Internal state for animation/rendering
   const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
+  const [showIntro, setShowIntro] = useState(!localStorage.getItem('vibe_intro_seen')); // New Intro Logic
 
   // Sync URL -> Tab
   useEffect(() => {
@@ -1622,11 +1803,19 @@ const MainApp = ({ user, userData, onLogout, onUpdate }) => {
       </div>
 
       {/* Onboarding Modal */}
-      {showOnboarding && (
+      {showOnboarding && !showIntro && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
           <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
         </div>
       )}
+
+      {/* Intro Modal (First Time User) */}
+      {showIntro && <IntroModal onClose={() => {
+        localStorage.setItem('vibe_intro_seen', 'true');
+        setShowIntro(false);
+        // If we haven't onboarded profile, show that next
+        if (!userData?.profile_pic) setShowOnboarding(true);
+      }} />}
     </div>
   );
 };
