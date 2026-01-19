@@ -14,37 +14,38 @@ const parseJwt = (token) => {
   }
 };
 
-// --- 🌟 Premium Data Content (No more broken images) ---
+// --- 🌟 Premium Data Content (Indian & Global Dating Vibe) ---
 const REAL_NAMES = [
-  "Aisha_Vibes", "Rahul_Cool", "Sneha_Official", "Vikram_Beats", "Priya_Travels",
-  "Arjun_Fitness", "Zara_Fashion", "Kabir_Music", "Ananya_Art", "Rohan_Tech",
-  "Sanya_Dance", "Aditya_Gamer", "Nisha_Foodie", "Karan_Life", "Meera_Yoga"
+  "Riya_Sharma", "Ananya_Queen", "Zara_Official", "Priya_Angel", "Sneha_Loves",
+  "Aisha_Vibes", "Kavya_Cool", "Neha_Style", "Ishita_Dream", "Simran_K",
+  "Rohan_Hunk", "Vikram_Fit", "Kabir_Sing", "Aryan_Vibe", "Rahul_Desi",
+  "Sana_Glow", "Tanya_Xo", "Mira_Fashion", "Diya_Sparkle", "Esha_Live",
+  "Arjun_Gym", "Aditya_Tech", "Vivaan_Cool", "Reyansh_Dude", "Dhruv_Art",
+  "Shruti_Date", "Pooja_Party", "Kriti_Sanon_Fan", "Alia_Fan_Club", "Nora_Dance",
+  "Sia_Travels", "Myra_Music", "Kiara_Cutie", "Avni_Artist", "Roohi_Rose",
+  "Aarav_King", "Vihaan_Pro", "Krishna_Soul", "Ishaan_Music", "Shaurya_Rider"
 ];
 
-const REAL_AVATARS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&h=150&fit=crop",
-  "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=150&h=150&fit=crop"
-];
+const REAL_AVATARS = Array.from({ length: 50 }, (_, i) =>
+  `https://source.unsplash.com/random/150x150?woman,girl,indian,portrait&sig=${i}`
+);
+
+const MALE_AVATARS = Array.from({ length: 20 }, (_, i) =>
+  `https://source.unsplash.com/random/150x150?man,boy,indian,portrait&sig=${i + 100}`
+);
+
+// Mix of mostly Female avatars for better ratio
+const ALL_AVATARS = [...REAL_AVATARS, ...MALE_AVATARS];
 
 const VIBE_IMAGES = [
-  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80", // Party/Event
-  "https://images.unsplash.com/photo-1514525253440-b393452eeb25?auto=format&fit=crop&w=800&q=80", // Club/Night
-  "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80", // Party Crowd
-  "https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&w=800&q=80", // Guy Portrait
-  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80", // Girl Model
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80", // Portrait
-  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=80", // Guy Portrait
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80", // Girl Model
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80", // Girl Camera
-  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=800&q=80"  // Guy Hoodie
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
+  "https://images.unsplash.com/photo-1514525253440-b393452eeb25?w=800&q=80",
+  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&q=80",
+  "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800&q=80",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&q=80",
+  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80",
+  "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
+  "https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=800&q=80"
 ];
 
 const Login = ({ onSuccess }) => {
@@ -253,13 +254,28 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
     interested_in: userData.interested_in || 'Everyone',
     min_age_pref: userData.min_age_pref || 18,
     max_age_pref: userData.max_age_pref || 50,
-    interests: userData.interests || '',
+    interests: userData.interests || '', // Comma separated
+    looking_for: 'Relationship', // New field logic simulation
   });
 
   const [profilePicPreview, setProfilePicPreview] = useState(userData.profile_pic || userData.google_pic_url);
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [galleryPreviews, setGalleryPreviews] = useState(userData.images ? userData.images.map(i => i.image) : []);
   const [loading, setLoading] = useState(false);
+
+  const VIBE_TAGS = ["🎵 Music", "🎮 Gaming", "💪 Gym", "🍕 Foodie", "✈️ Travel", "📸 Photography", "🎨 Art", "📚 Books", "💻 Tech", "🍿 Movies", "💃 Dancing", "🏎️ Cars", "🌿 Nature", "🐶 Pets"];
+  const selectedTags = form.interests ? form.interests.split(',').filter(Boolean) : [];
+
+  const toggleTag = (tag) => {
+    let newTags;
+    if (selectedTags.includes(tag)) {
+      newTags = selectedTags.filter(t => t !== tag);
+    } else {
+      if (selectedTags.length >= 5) return toast.error("Max 5 vibes allowed!");
+      newTags = [...selectedTags, tag];
+    }
+    setForm({ ...form, interests: newTags.join(',') });
+  };
 
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
@@ -300,7 +316,7 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
       const res = await api.updateMe(data);
       onUpdate(res.data);
       onClose();
-      toast.success("Vibe Updated! 🔥");
+      toast.success("Profile Updated! Ready to Match 🔥");
     } catch (err) {
       console.error(err);
       toast.error("Update failed.");
@@ -313,7 +329,7 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-nav-in">
       <div className="bg-[#121212] w-full max-w-lg h-auto max-h-[90vh] rounded-3xl border border-white/10 shadow-2xl overflow-y-auto custom-scrollbar relative">
         <div className="sticky top-0 bg-[#121212]/90 backdrop-blur z-20 flex justify-between items-center p-5 border-b border-white/5">
-          <h2 className="text-xl font-black italic bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">EDIT VIBE</h2>
+          <h2 className="text-xl font-black italic bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">EDIT PROFILE</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition"><X size={24} /></button>
         </div>
 
@@ -337,8 +353,8 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
 
           <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
             <div className="flex justify-between items-center mb-3">
-              <label className="text-xs font-black text-white/70 uppercase tracking-wider flex items-center gap-2"><Image size={14} className="text-purple-500" /> My Vibe Gallery</label>
-              <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded badge-gradient">Add 5+ Photos</span>
+              <label className="text-xs font-black text-white/70 uppercase tracking-wider flex items-center gap-2"><Image size={14} className="text-purple-500" /> My Photos</label>
+              <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded badge-gradient">Best for Matches</span>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
               <label className="w-24 h-32 flex-shrink-0 snap-start bg-black/40 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-cyan-400/50 hover:bg-cyan-400/5 transition group">
@@ -354,23 +370,65 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
                   </div>
                 </div>
               ))}
-              {[...Array(Math.max(0, 4 - galleryPreviews.length))].map((_, i) => (
-                <div key={`empty-${i}`} className="w-24 h-32 flex-shrink-0 snap-start bg-white/5 rounded-xl border border-white/5 flex items-center justify-center">
-                  <Plus size={16} className="text-white/10" />
-                </div>
-              ))}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="group">
-              <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">DISPLAY NAME</label>
-              <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="input-field w-full bg-white/5 border-white/10 focus:border-cyan-500 transition-colors rounded-xl p-3" placeholder="Your Vibe Name" />
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="group">
+                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">DISPLAY NAME</label>
+                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="input-field w-full bg-white/5 border-white/10 focus:border-cyan-500 transition-colors rounded-xl p-3" placeholder="Name" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">AGE</label>
+                <input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} className="input-field w-full bg-white/5 border-white/10 rounded-xl p-3" />
+              </div>
             </div>
+
             <div className="group">
-              <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">BIO / STATUS</label>
+              <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">ABOUT ME</label>
               <textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} className="input-field w-full h-24 resize-none bg-white/5 border-white/10 focus:border-purple-500 transition-colors rounded-xl p-3" placeholder="Tell the world your vibe... ✨" />
             </div>
+
+            {/* VIBE TAGS */}
+            <div>
+              <label className="text-xs font-bold text-white/40 ml-1 mb-2 block uppercase tracking-wider">My Vibe (Select 5)</label>
+              <div className="flex flex-wrap gap-2">
+                {VIBE_TAGS.map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${selectedTags.includes(tag)
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white shadow-lg'
+                      : 'bg-white/5 border-white/10 text-white/60 hover:border-white/30'
+                      }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-white/40 ml-1 mb-2 block uppercase tracking-wider">I'm Looking For</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['Relationship 💘', 'Situationship 😵‍💫', 'Just Friends 🤝', 'Casual 😉', 'Not Sure 🤷‍♂️', 'Chat Only 💬'].map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setForm({ ...form, looking_for: opt })}
+                    className={`p-2 rounded-xl text-xs font-bold border transition text-center ${form.looking_for === opt
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white/5 border-white/10 text-white/60'
+                      }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">GENDER</label>
@@ -384,8 +442,15 @@ const EditProfileModal = ({ user, userData, onClose, onUpdate }) => {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">AGE</label>
-                <input type="number" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} className="input-field w-full bg-white/5 border-white/10 rounded-xl p-3" />
+                <label className="text-xs font-bold text-white/40 ml-1 mb-1 block">INTERESTED IN</label>
+                <div className="relative">
+                  <select value={form.interested_in} onChange={e => setForm({ ...form, interested_in: e.target.value })} className="input-field w-full bg-white/5 border-white/10 rounded-xl p-3 appearance-none">
+                    <option>Everyone</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select>
+                  <div className="absolute right-3 top-3.5 pointer-events-none opacity-50"><ChevronDown size={14} /></div>
+                </div>
               </div>
             </div>
           </div>
@@ -432,15 +497,40 @@ const InstaNav = ({ activeTab, onTabChange }) => (
 
 
 
+// --- 🎥 Premium Video Content (Female Centric / Dating Vibe) ---
+const VIBE_VIDEOS = [
+  "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-woman-running-above-camera-screen-40748-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-young-woman-talking-on-video-call-with-smartphone-40758-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-young-woman-skating-in-a-parking-lot-40738-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-woman-walking-on-beach-at-sunset-1184-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-girl-dancing-happy-in-a-room-40745-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-woman-in-white-dress-confident-in-front-of-camera-40751-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-woman-posing-for-camera-in-winter-clothes-40742-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-young-couple-walking-in-the-city-40733-large.mp4",
+  "https://assets.mixkit.co/videos/preview/mixkit-couple-dating-in-a-restaurant-40735-large.mp4"
+];
+
 const generateMockReels = (count = 50) => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `mock-reel-${i}`,
-    url: VIBE_IMAGES[i % VIBE_IMAGES.length],
-    likes: Math.floor(Math.random() * 50000) + 1000,
-    user: REAL_NAMES[i % REAL_NAMES.length],
-    avatar: REAL_AVATARS[i % REAL_AVATARS.length],
-    desc: ["Vibing hard! ✨", "Check this vibe 🔥", "Night life 🌙", "Outfit check 👗", "Travel goals ✈️"][Math.floor(Math.random() * 5)]
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const isGirl = i % 3 !== 0; // 2/3rd Girls
+    return {
+      id: `mock-reel-${i}`,
+      url: VIBE_VIDEOS[i % VIBE_VIDEOS.length],
+      thumb: VIBE_IMAGES[i % VIBE_IMAGES.length],
+      likes: Math.floor(Math.random() * 50000) + 1000,
+      user: REAL_NAMES[i % REAL_NAMES.length],
+      avatar: isGirl ? REAL_AVATARS[i % REAL_AVATARS.length] : MALE_AVATARS[i % MALE_AVATARS.length],
+      desc: [
+        "Waiting for my date... 🙈 #dating #love",
+        "Koi hai jo vibe match kre? ✨ #single",
+        "Night drives & chill? 🚗 #vibes",
+        "Outfit of the day! Rate it 1-10 💖",
+        "Missing someone special... ❤️",
+        "Kaun banega mera partner? 😉 #desivibes"
+      ][Math.floor(Math.random() * 6)]
+    };
+  });
 };
 
 const Feed = ({ onMessage }) => {
@@ -576,56 +666,153 @@ const Feed = ({ onMessage }) => {
 };
 
 const Reels = ({ onMessage }) => {
-  // Use persistent mock data
   const [reels] = useState(() => generateMockReels(100));
+  const videoRefs = useRef({});
+  const containerRef = useRef(null);
+  const [muted, setMuted] = useState(true);
+
+  // Intersection Observer to Auto-Play/Pause
+  useEffect(() => {
+    const options = {
+      root: containerRef.current,
+      threshold: 0.6, // Play when 60% visible
+    };
+
+    const handleIntersection = (entries) => {
+      entries.forEach(entry => {
+        const video = videoRefs.current[entry.target.dataset.id];
+        if (!video) return;
+
+        if (entry.isIntersecting) {
+          video.currentTime = 0; // Restart for loop effect
+          video.play().catch(e => console.log("Autoplay prevented:", e));
+        } else {
+          video.pause();
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, options);
+    // Slight delay to ensure DOM is ready
+    setTimeout(() => {
+      const elements = document.querySelectorAll('.reel-snap-item');
+      elements.forEach(el => observer.observe(el));
+    }, 100);
+
+    return () => observer.disconnect();
+  }, [reels]);
+
+  // Handle Double Tap Like
+  const handleDoubleTap = (e) => {
+    const heart = document.createElement('div');
+    heart.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+    heart.className = 'absolute inset-0 m-auto w-24 h-24 flex items-center justify-center animate-ping z-50 pointer-events-none drop-shadow-2xl';
+    e.currentTarget.appendChild(heart);
+    setTimeout(() => heart.remove(), 800);
+  };
+
+  const togglePlay = (id) => {
+    const video = videoRefs.current[id];
+    if (video) {
+      if (video.paused) video.play();
+      else video.pause();
+    }
+  };
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    setMuted(prev => !prev);
+  }
 
   return (
-    <div className="reels-container snap-y snap-mandatory scrollbar-hide h-[calc(100vh-60px)] w-full overflow-y-scroll bg-black">
+    <div ref={containerRef} className="reels-container snap-y snap-mandatory scrollbar-hide h-[calc(100vh-60px)] w-full overflow-y-scroll bg-black">
       {reels.map((r, i) => (
-        <div key={i} className="reel-item snap-start h-full w-full relative flex items-center justify-center bg-gray-900 border-b border-gray-800">
+        <div
+          key={i}
+          data-id={r.id}
+          className="reel-snap-item reel-item snap-start h-full w-full relative flex items-center justify-center bg-gray-900 border-b border-gray-800"
+        >
+          {/* Video Layer */}
+          <div className="absolute inset-0 bg-black cursor-pointer" onDoubleClick={handleDoubleTap} onClick={() => togglePlay(r.id)}>
+            <video
+              ref={el => videoRefs.current[r.id] = el}
+              src={r.url}
+              poster={r.thumb}
+              className="w-full h-full object-cover opacity-100"
+              loop
+              muted={muted}
+              playsInline
+              preload="metadata"
+            />
+            {/* Dark Gradient Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/90 pointer-events-none"></div>
 
-          <div className="absolute inset-0">
-            <img src={r.url} className="w-full h-full object-cover opacity-80" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
+            {/* Play/Pause/Mute Indicator Overlay */}
+            <button onClick={toggleMute} className="absolute top-20 right-4 z-30 p-2 bg-black/50 rounded-full backdrop-blur-md border border-white/10">
+              {muted ? <div className="text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg></div>
+                : <div className="text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div>}
+            </button>
           </div>
 
-          <div className="absolute bottom-20 left-4 right-16 text-white z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-full border-2 border-white overflow-hidden">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${r.user}`} className="w-full h-full bg-black" />
+          {/* 🎵 Music Disc Animation (Bottom Right) */}
+          <div className="absolute bottom-20 right-4 z-20 pointer-events-none">
+            <div className="w-12 h-12 rounded-full bg-gray-900 border-4 border-gray-800 flex items-center justify-center animate-spin-slow overflow-hidden shadow-lg shadow-black/50">
+              <img src={r.avatar} className="w-full h-full object-cover opacity-80" />
+            </div>
+            <div className="absolute -bottom-2 -right-2 transform -rotate-12">
+              <Music size={16} className="text-white drop-shadow-lg" />
+            </div>
+          </div>
+
+          {/* 📝 User Info (Bottom Left) */}
+          <div className="absolute bottom-20 left-4 right-16 text-white z-20 text-left pointer-events-none">
+            <div className="flex items-center gap-3 mb-3 pointer-events-auto">
+              <div className="w-11 h-11 rounded-full border-2 border-white/80 p-[2px] bg-clip-border bg-gradient-to-tr from-yellow-400 to-purple-600 shadow-lg">
+                <img src={r.avatar} className="w-full h-full rounded-full object-cover bg-black" />
               </div>
-              <span className="font-bold text-sm drop-shadow-md">{r.user}</span>
-              <span className="text-xs border border-white px-3 py-1 rounded-lg backdrop-blur-md font-bold">Follow</span>
+              <span className="font-black text-white text-base drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-wide shadow-black">{r.user}</span>
+              <button className="text-xs border border-white/40 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md font-bold hover:bg-white/20 transition shadow-lg">Follow</button>
             </div>
-            <p className="text-sm drop-shadow-md mb-2 line-clamp-2">{r.desc} <span className="text-blue-400 font-bold">#vibetalk</span></p>
-            <div className="flex items-center gap-2 text-xs opacity-90 overflow-hidden bg-white/10 w-fit px-2 py-1 rounded-full backdrop-blur-sm">
-              <Music size={12} /> <span className="animate-pulse">Trending Vibe • Original Audio</span>
+
+            <p className="text-sm drop-shadow-md mb-3 line-clamp-2 font-medium opacity-95 leading-relaxed">{r.desc} <span className="text-cyan-400 font-bold">#vibe #trending</span></p>
+
+            <div className="flex items-center gap-2 text-xs opacity-90 bg-black/40 w-fit px-4 py-2 rounded-full backdrop-blur-md border border-white/10 shadow-lg">
+              <Music size={14} className="animate-pulse text-cyan-400" />
+              <div className="overflow-hidden w-40 whitespace-nowrap">
+                <span className="animate-shine inline-block font-medium">Original Audio • {r.user} • VibeTalk Exclusive</span>
+              </div>
             </div>
           </div>
 
-          <div className="absolute bottom-24 right-3 flex flex-col items-center gap-6 text-white z-20">
-            <div className="flex flex-col items-center gap-1 group cursor-pointer">
-              <Heart size={32} className="group-hover:text-red-500 transition drop-shadow-xl" />
-              <span className="text-xs font-bold">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
+          {/* ❤️ Interaction Sidebar (Right) */}
+          <div className="absolute bottom-36 right-2 flex flex-col items-center gap-6 text-white z-20 pointer-events-auto">
+            <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={(e) => { e.stopPropagation(); handleDoubleTap(e); }}>
+              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
+                <Heart size={32} className="group-hover:text-red-500 transition drop-shadow-2xl" />
+              </div>
+              <span className="text-xs font-bold drop-shadow-lg">{r.likes > 1000 ? (r.likes / 1000).toFixed(1) + 'k' : r.likes}</span>
             </div>
-            <div className="flex flex-col items-center gap-1 group cursor-pointer">
-              <MessageCircle size={32} className="group-hover:text-blue-400 transition drop-shadow-xl" />
-              <span className="text-xs font-bold">1.2k</span>
+
+            <div className="flex flex-col items-center gap-1 group cursor-pointer" onClick={(e) => { e.stopPropagation(); onMessage(r.user); }}>
+              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
+                <MessageCircle size={32} className="group-hover:text-blue-400 transition drop-shadow-2xl -scale-x-100" />
+              </div>
+              <span className="text-xs font-bold drop-shadow-lg">1.2k</span>
             </div>
+
             <div className="flex flex-col items-center gap-1 group cursor-pointer">
-              <Send size={32} className="group-hover:text-green-400 transition drop-shadow-xl" />
+              <div className="p-2 rounded-full bg-black/20 backdrop-blur-sm border border-white/5 hover:bg-white/10 transition active:scale-90 shadow-lg">
+                <Send size={32} className="group-hover:text-green-400 transition drop-shadow-2xl transform -rotate-12" />
+              </div>
             </div>
+
             <div className="group cursor-pointer">
               <MoreVertical size={24} className="opacity-80 drop-shadow-xl" />
             </div>
-            <div className="w-8 h-8 rounded-lg border-2 border-white/50 overflow-hidden animate-spin-slow mt-2">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=music${i}`} className="w-full h-full bg-black p-1" />
-            </div>
           </div>
-
         </div>
       ))}
-    </div>
+    </div >
   );
 };
 
@@ -667,13 +854,13 @@ const MessagesList = ({ navigate, activeUser }) => {
               <div key={p.id} className="chat-item" onClick={() => navigate(`/chats/${p.user}`)}>
                 {/* Navigating to /chats/:id where :id is the USER ID, handled by MainApp/Router logic */}
                 <div className="story-ring w-14 h-14 p-0.5 border-none bg-gradient-to-tr from-transparent to-transparent">
-                  <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full rounded-full bg-gray-800 object-cover" />
+                  <img src={p.profile_pic || REAL_AVATARS[p.id % REAL_AVATARS.length]} className="w-full h-full rounded-full bg-gray-800 object-cover" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-sm block">{p.name || p.username}</h4>
+                  <h4 className="font-bold text-sm block">{p.name || REAL_NAMES[p.id % REAL_NAMES.length]}</h4>
                   <p className="text-xs opacity-60">Tap to chat • Now</p>
                 </div>
-                <camera size={20} className="opacity-50" />
+                <Camera size={20} className="opacity-50" />
               </div>
             ))}
       </div>
@@ -906,38 +1093,45 @@ const PublicRooms = () => {
 };
 
 // --- 💬 Premium Instagram-Style Chat ---
+// --- 💬 Premium Instagram-Style Chat ---
 const ChatRoom = ({ user, isPublic = false }) => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
+  const [isTyping, setIsTyping] = useState(false); // Frontend Simulation of Typing
   const chatEndRef = useRef(null);
 
   // Determine Room Name/Info
-  const roomData = location.state?.room; // For public
-  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null }; // For Private
-  const chatTitle = isPublic ? (roomData?.name || 'Public Room') : otherUser.username;
-  const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username}`);
+  const roomData = location.state?.room;
+  const otherUser = location.state?.otherUser || { username: 'Vibe User', profile_pic: null };
+  const chatTitle = isPublic ? (roomData?.name || 'Public Room') : (otherUser.username || "Vibe Match");
+  const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username || 'user'}`);
 
   // Fetch Logic
   const loadMessages = async () => {
     try {
       const res = await api.getMessages(id, isPublic);
-      setMessages(res.data);
+      const newMsgs = res.data;
+
+      // If we have new messages and we were "typing", stop typing
+      if (newMsgs.length > messages.length) {
+        setIsTyping(false);
+      }
+      setMessages(newMsgs);
     } catch (err) { console.error(err); }
   };
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 3000);
+    const interval = setInterval(loadMessages, 2000); // Poll every 2s for "Real-time" feel
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, messages.length]); // Dep on length to detect changes
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'auto' });
-  }, [messages]);
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -945,45 +1139,58 @@ const ChatRoom = ({ user, isPublic = false }) => {
     try {
       await api.sendMessage(id, text, isPublic);
       setText('');
-      loadMessages();
+      loadMessages(); // Show my message immediately
+
+      // SIMULATE REALISM: 
+      // 1. Wait 2-4 seconds (thinking)
+      // 2. Show "Typing..."
+      // 3. Backend will deliver message in ~10s, which polling will catch
+      if (!isPublic) {
+        setTimeout(() => {
+          setIsTyping(true);
+        }, Math.random() * 2000 + 2000);
+      }
+
     } catch (e) { toast.error("Failed to send"); }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
+    <div className="flex flex-col h-screen bg-black text-white font-sans">
       {/* 🟢 Header */}
       <div className="h-16 flex items-center px-4 border-b border-white/10 bg-black/90 backdrop-blur sticky top-0 z-50">
-        <ArrowLeft size={24} className="mr-4 cursor-pointer" onClick={() => navigate(-1)} />
+        <ArrowLeft size={24} className="mr-4 cursor-pointer hover:scale-110 transition" onClick={() => navigate(-1)} />
 
         {!isPublic && (
-          <div className="w-8 h-8 rounded-full overflow-hidden mr-3 border border-white/20">
-            <img src={chatAvatar} className="w-full h-full object-cover" />
+          <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border-2 border-green-500 p-0.5">
+            <img src={chatAvatar} className="w-full h-full object-cover rounded-full bg-gray-800" />
           </div>
         )}
 
-        <div className="flex-1">
-          <h3 className="font-bold text-lg leading-tight">{chatTitle}</h3>
-          {isPublic ? (
-            <span className="text-xs text-green-400 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Live Audio</span>
+        <div className="flex-1 cursor-pointer">
+          <h3 className="font-bold text-base leading-tight flex items-center gap-1">{chatTitle} {isPublic && <span className="bg-red-500 text-[8px] px-1 rounded text-white font-bold">LIVE</span>}</h3>
+          {!isPublic ? (
+            <span className="text-xs text-green-400 font-medium">Online now</span>
           ) : (
-            <span className="text-xs text-white/50">Active now</span>
+            <span className="text-xs text-white/50">{Math.floor(Math.random() * 200) + 10} vibing</span>
           )}
         </div>
 
-        <div className="flex gap-4 opacity-70">
-          <Phone size={24} />
-          <Video size={24} />
+        <div className="flex gap-6 opacity-80">
+          <Phone size={24} className="hover:text-green-400 transition cursor-pointer" />
+          <Video size={24} className="hover:text-blue-400 transition cursor-pointer" />
         </div>
       </div>
 
       {/* 🟢 Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-black">
         {/* Welcome Placeholder */}
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center opacity-40 mt-20">
-            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4 text-4xl">👋</div>
-            <p>No messages yet.</p>
-            <p className="text-xs">Start the vibe!</p>
+          <div className="flex flex-col items-center justify-center opacity-40 mt-32 animate-in fade-in zoom-in duration-500">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center mb-4 text-5xl shadow-[0_0_30px_rgba(0,210,255,0.4)]">
+              <img src={chatAvatar} className="w-22 h-22 rounded-full opacity-80" />
+            </div>
+            <p className="font-bold text-lg">It's a Match! 🔥</p>
+            <p className="text-xs opacity-70">Don't be shy, say hi.</p>
           </div>
         )}
 
@@ -992,54 +1199,68 @@ const ChatRoom = ({ user, isPublic = false }) => {
           const showAvatar = !isMe && (i === 0 || messages[i - 1].sender_name !== msg.sender_name);
 
           return (
-            <div key={i} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-up`}>
-              {!isMe && showAvatar && (
-                <div className="w-7 h-7 rounded-full bg-gray-700 overflow-hidden flex-shrink-0 self-end mb-1">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} />
+            <div key={i} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
+              {!isMe && (
+                <div className={`w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 self-end mb-1 ${!showAvatar && 'opacity-0'}`}>
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} className="w-full h-full object-cover" />
                 </div>
               )}
-              {!isMe && !showAvatar && <div className="w-7 flex-shrink-0" />}
 
-              <div className={`max-w-[70%] px-4 py-2 text-sm rounded-2xl ${isMe
-                ? 'bg-blue-600 text-white rounded-br-none'
-                : 'bg-zinc-800 text-white rounded-bl-none'
+              <div className={`max-w-[75%] px-4 py-2.5 text-sm rounded-2xl shadow-sm ${isMe
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-sm'
+                : 'bg-[#262626] text-white rounded-bl-sm border border-white/5'
                 }`}>
-                {msg.text && <p>{msg.text}</p>}
+                {msg.text && <p className="leading-snug">{msg.text}</p>}
                 {msg.audio_url && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="bg-black/30 w-8 h-8 rounded-full flex items-center justify-center"><Play size={12} fill="white" /></div>
-                    <div className="h-1 bg-white/30 w-24 rounded-full overflow-hidden">
-                      <div className="h-full bg-white w-1/2"></div>
+                  <div className="flex items-center gap-3 mt-1 min-w-[120px]">
+                    <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition"><Play size={14} fill="white" /></div>
+                    <div className="h-8 flex items-center gap-0.5">
+                      {[...Array(10)].map((_, j) => <div key={j} className="w-1 bg-white/40 rounded-full" style={{ height: Math.random() * 15 + 5 + 'px' }}></div>)}
                     </div>
-                    <span className="text-[10px]">0:05</span>
                   </div>
                 )}
+                <span className="text-[9px] opacity-40 block text-right mt-1 font-medium">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
           );
         })}
+
+        {/* REALISTIC TYPING INDICATOR */}
+        {isTyping && (
+          <div className="flex gap-2 justify-start animate-in fade-in slide-in-from-bottom-2">
+            <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 self-end mb-1 border border-white/10">
+              <img src={chatAvatar} className="w-full h-full object-cover" />
+            </div>
+            <div className="bg-[#262626] border border-white/5 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5 h-10 w-16">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+        )}
+
         <div ref={chatEndRef}></div>
       </div>
 
       {/* 🟢 Input Area */}
-      <div className="p-3 bg-black border-t border-white/10 flex items-center gap-3">
-        <div className="bg-zinc-800 p-2 rounded-full cursor-pointer hover:bg-zinc-700 transition">
-          <Camera size={20} className="text-blue-400" />
+      <div className="p-3 bg-black border-t border-white/10 flex items-center gap-3 pb-8">
+        <div className="bg-[#262626] p-2.5 rounded-full cursor-pointer hover:bg-white/20 transition active:scale-90">
+          <Camera size={22} className="text-blue-500" />
         </div>
 
-        <form onSubmit={handleSend} className="flex-1 bg-zinc-900 rounded-full flex items-center px-4 py-2 border border-white/5 focus-within:border-white/20 transition">
+        <form onSubmit={handleSend} className="flex-1 bg-[#121212] rounded-full flex items-center px-5 py-3 border border-white/10 focus-within:border-blue-500/50 transition shadow-inner">
           <input
-            className="bg-transparent border-none outline-none text-sm text-white flex-1 placeholder-white/30"
+            className="bg-transparent border-none outline-none text-base text-white flex-1 placeholder-zinc-500"
             placeholder="Message..."
             value={text}
             onChange={e => setText(e.target.value)}
           />
           {text.trim() ? (
-            <button type="submit" className="text-blue-500 font-bold text-sm">Send</button>
+            <button type="submit" className="text-blue-500 font-bold text-sm ml-2 hover:text-blue-400 transition">Send</button>
           ) : (
-            <div className="flex gap-3 opacity-60">
-              <Mic size={20} />
-              <ImageIcon size={20} />
+            <div className="flex gap-4 opacity-50 pr-1">
+              <Mic size={22} className="hover:text-white transition cursor-pointer" />
+              <ImageIcon size={22} className="hover:text-white transition cursor-pointer" />
             </div>
           )}
         </form>

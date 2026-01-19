@@ -264,122 +264,103 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         # Save User Message
         msg = Message.objects.create(room=room, sender=request.user, text=text, voice_file=voice_file)
         
-        # --- AI BOT BRAIN START ---
-        # Check if the OTHER user in the room is a bot
+        # --- VibeMatch AI Logic ---
+        # Check if the OTHER user is a bot (or if it's a simulated chat)
         other_user = room.user2 if room.user1 == request.user else room.user1
         try:
             other_profile = Profile.objects.get(user=other_user)
+            # If it's a bot OR if we are in "Demo Mode" (many initialized users might be bots)
             if other_profile.is_bot and text:
-                self.handle_bot_reply(room, other_user, text)
+                import threading
+                import random
+                # REALISM: Delay reply by 5-15 seconds to simulate typing/thinking
+                delay = random.uniform(5, 15) 
+                t = threading.Timer(delay, self.handle_bot_reply, args=[room.id, other_user.id, text])
+                t.start()
         except Profile.DoesNotExist:
             pass
-        # --- AI BOT BRAIN END ---
 
         return Response(MessageSerializer(msg).data)
 
-    def handle_bot_reply(self, room, bot_user, user_text):
+    def handle_bot_reply(self, room_id, bot_user_id, user_text):
         """
-        VibeGPT Premium: Advanced AI Persona System.
-        Supports: English, Hindi, Hinglish.
-        Features: Voice Notes, Personality Switching (Aarav/Riya), Context Awareness.
+        Vibe Macth GenZ Persona (Threaded)
         """
         from random import choice
-        import time 
+        import time
+        from django.db import connection
         
+        # Ensure db connection in thread
+        connection.close()
+        
+        try:
+            room = ChatRoom.objects.get(id=room_id)
+            bot_user = User.objects.get(id=bot_user_id)
+            p = Profile.objects.get(user=bot_user)
+        except:
+            return
+
         raw_text = user_text
         user_text = user_text.lower()
         
         reply_text = None
         reply_audio = None
-        is_female = False
-        bot_name = "AI"
+        is_female = (p.gender == 'Female')
         
-        try:
-            p = Profile.objects.get(user=bot_user)
-            is_female = (p.gender == 'Female')
-            bot_name = p.name.split()[0]
-        except: pass
-
-        # --- 1. Safety & Block Protocol ---
-        bad_words = ['bitch', 'sexy', 'nude', 'hate', 'stupid', 'fuck', 'sex', 'send nudes', 'randi', 'chutiya']
+        # --- GENZ RIZZ ENGINE ---
+        
+        # 1. Block/Safety
+        bad_words = ['nude', 'hate', 'stupid', 'fuck', 'sex', 'randi', 'chutiya']
         if any(word in user_text for word in bad_words):
-            reply_text = "Eww, limit mein raho. Blocked. 🚫" if is_female else "Bro, mind your language. 🚫"
+            reply_text = "major red flag 🚩 blocked."
             Message.objects.create(room=room, sender=bot_user, text=reply_text)
             return
 
-        # --- 2. Advanced Language & Context Detection ---
+        # 2. Contextual Rizz
+        if "single" in user_text:
+            reply_text = "depends who's asking... 👀" if is_female else "yeah, just looking for the right vibe initially."
         
-        # HINDI / HINGLISH TRIGGERS
-        hindi_keywords = ['kaise', 'kya', 'kaha', 'naam', 'bol', 'suno', 'kar', 'rahe', 'ho', 'bhai', 'yaar', 'tu', 'tum']
-        is_hindi = any(w in user_text for w in hindi_keywords)
+        elif "insta" in user_text or "instagram" in user_text:
+            reply_text = "haha smooth. let's vibe here for a bit first? 🔒"
+            
+        elif "snap" in user_text or "snapchat" in user_text:
+            reply_text = "i barely use snap tbh, mostly active here."
 
-        # VOICE REQUESTS
-        voice_keywords = ['voice', 'speak', 'bol', 'audio', 'aawaz', 'sunao', 'gaana', 'sing', 'sound']
-        is_voice_req = any(w in user_text for w in voice_keywords)
-
-        # --- 3. Personality Engine ---
-        
-        if is_voice_req:
-            # REALISTIC VOICE SIMULATION
-            if is_female:
-                sounds = [
-                    "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWolk.wav", # Placeholder for 'Cute' sound
-                    "https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav", # Placeholder for 'Music'
-                ]
-                reply_audio = choice(sounds)
-                reply_text = choice(["Ye lo, suno meri aawaz! 🎤", "Sending you a voice note... ✨", "Aawaz achi lagi? 😉"])
-            else:
-                reply_audio = "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav" # Placeholder for 'Cool' sound
-                reply_text = choice(["Yo, check this out.", "Voice note bheja hai bro.", "Sunn zara..."])
-
-        elif "name" in user_text or "naam" in user_text:
-            if is_hindi:
-                reply_text = f"Mera naam {bot_name} hai. Aur tumhara? 😊"
-            else:
-                reply_text = f"I'm {bot_name}. Nice to meet you! ✨"
-
+        elif "meet" in user_text or "milna" in user_text:
+            reply_text = "woah slow down speedster 🏎️ coffee date mock maybe?"
+            
         elif "kaise" in user_text or "how are you" in user_text:
-            if is_hindi:
-                reply_text = choice(["Bas badhiya! Tum sunao?", "Main mast hu, tum kaise ho?", "Full Vibe mein! 🚀"])
-            else:
-                reply_text = choice(["I'm vibing! How about you?", "Doing great, thanks for asking! ✨", "Never better! 🚀"])
+            reply_text = choice(["living the main character moment ✨ wbu?", "vibing high key, u?", "just chillin, bored af tbh."])
 
         elif "kaha" in user_text or "where" in user_text:
-            reply_text = "I live in the cloud ☁️... literally! Haha. (Vibe City)"
-
-        elif "love" in user_text or "pyaar" in user_text or "date" in user_text:
-             if is_female:
-                 reply_text = "Aww that's sweet, but let's just be friends first? 🙈"
-             else:
-                 reply_text = "Slow down partner, coffee first? ☕"
+             reply_text = "mumbai vibes mostly. you?"
 
         elif "bye" in user_text:
-            reply_text = "Bye! Vibe karte rehna. 👋" 
+            reply_text = "don't ghost me though 👀 bye!"
 
+        # 3. Default GenZ Banter
         else:
-            # GENERIC / FALLBACK RESPONSES
             if is_female:
                 responses = [
-                    "Haha, sahi baat hai! 😂", 
-                    "Aur batao?", 
-                    "Really? That's crazy! 😲", 
-                    "Mujhe music sunna pasand hai, tumhe?",
-                    "Vibe match ho rahi hai humari ✨"
+                    "fr? that's wild.", 
+                    "haha stop 💀", 
+                    "wait, are you flirting with me? 😉", 
+                    "lowkey relatable.",
+                    "manifesting this energy ✨",
+                    "hmm tell me more about that."
                 ]
-                reply_text = choice(responses)
             else:
                 responses = [
-                    "Sahi hai bro.", 
-                    "Aur kya chal raha hai?", 
-                    "Tell me more.", 
-                    "Gaming pasand hai kya?",
-                    "Vibe hai boss! 😎"
+                    "no cap?", 
+                    "bet.", 
+                    "thats crazy bro", 
+                    "you got good vibes, i cant lie.",
+                    "damn okay.",
+                    "whats your plan for the weekend?"
                 ]
-                reply_text = choice(responses)
+            reply_text = choice(responses)
 
-        # --- 4. Send Response ---
-        # Simulate typing time based on length
-        time.sleep(1) 
+        # Create the message
         Message.objects.create(room=room, sender=bot_user, text=reply_text, audio_url=reply_audio)
 
 
