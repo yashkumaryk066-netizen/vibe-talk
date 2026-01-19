@@ -692,7 +692,7 @@ const Feed = ({ onMessage }) => {
             <div className="p-3">
               <div className="flex gap-5 mb-3">
                 <Heart size={26} className="hover:text-red-500 hover:fill-red-500 transition cursor-pointer" />
-                <div onClick={() => navigate('/chats/new', { state: { otherUser: p } })} className="cursor-pointer hover:scale-110 transition hover:text-blue-400">
+                <div onClick={() => navigate('/chats/' + (p.id || `fake_${p.username}`), { state: { otherUser: { ...p, isFake: !p.id } } })} className="cursor-pointer hover:scale-110 transition hover:text-blue-400">
                   <MessageCircle size={26} className="-scale-x-100" />
                 </div>
                 <Send size={26} className="hover:text-green-400 transition cursor-pointer" />
@@ -909,7 +909,7 @@ const Reels = ({ onMessage }) => {
 
             <div className="flex flex-col items-center gap-0.5 group cursor-pointer" onClick={(e) => {
               e.stopPropagation();
-              navigate('/chats/new', { state: { otherUser: { username: r.user, profile_pic: r.avatar } } });
+              navigate('/chats/' + (r.user_id || `fake_${r.user}`), { state: { otherUser: { username: r.user, profile_pic: r.avatar, isFake: !r.user_id } } });
             }}>
               <MessageCircle size={30} strokeWidth={1.5} className="group-hover:scale-110 transition drop-shadow-lg -scale-x-100" />
               <span className="text-[11px] font-bold drop-shadow-md">1.2k</span>
@@ -1358,8 +1358,8 @@ const ChatRoom = ({ user, isPublic = false }) => {
     e.preventDefault();
     if (!text.trim() || !id || id === 'undefined') return;
     try {
-      // Mock Send for BOT
-      if (id !== 'bot') {
+      // Mock Send for BOT or FAKE USER
+      if (id !== 'bot' && !String(id).startsWith('fake_')) {
         await api.sendMessage(id, text, isPublic);
       }
 
