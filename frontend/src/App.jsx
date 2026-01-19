@@ -1318,6 +1318,112 @@ const Navbar = () => {
   );
 }
 
+// --- 🔍 Premium Advanced Search ---
+const AdvancedSearch = ({ user }) => {
+  const [profiles, setProfiles] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true);
+    // Fetch REAL Premium Profiles
+    api.getProfiles().then(res => {
+      // Merge with Mock Data for Robustness
+      const mockProfiles = Array.from({ length: 20 }, (_, i) => ({
+        id: `mock-user-${i}`,
+        username: REAL_NAMES[i % REAL_NAMES.length],
+        profile_pic: REAL_AVATARS[i % REAL_AVATARS.length],
+        bio: "Just vibing here ✨",
+        age: 20 + (i % 5),
+        location: "Mumbai, India",
+        is_premium: i % 3 === 0
+      }));
+
+      const allProfiles = [...(res.data || []), ...mockProfiles];
+      // Filter out self
+      setProfiles(allProfiles.filter(p => p.username !== user.username));
+      setLoading(false);
+    });
+  }, [user.username]);
+
+  // Search Filter Logic
+  const filteredProfiles = profiles.filter(p =>
+    p.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.bio && p.bio.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <div className="screen pb-24 pt-4 px-4 bg-black min-h-screen">
+      {/* 🔍 Premium Search Header */}
+      <div className="sticky top-0 bg-black/95 backdrop-blur z-20 pb-4 w-full border-b border-white/5 pt-2 mb-4">
+        <h1 className="text-3xl font-black italic tracking-tighter text-white mb-4">Discover <span className="text-cyan-500">Vibes</span></h1>
+
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search size={20} className="text-gray-400 group-focus-within:text-cyan-400 transition" />
+          </div>
+          <input
+            type="text"
+            className="w-full bg-[#1A1A1A] border border-white/10 text-white text-sm rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 block pl-11 p-4 transition-all shadow-lg placeholder-gray-500"
+            placeholder="Search people, vibes, interests..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <div onClick={() => setSearchTerm('')} className="absolute inset-y-0 right-4 flex items-center cursor-pointer">
+              <div className="bg-gray-700 rounded-full p-1"><X size={12} className="text-white" /></div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center mt-20">
+          <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+          {filteredProfiles.length === 0 ? (
+            <div className="col-span-2 text-center mt-10 opacity-50 flex flex-col items-center">
+              <Search size={40} className="mb-2 opacity-50" />
+              <p>No vibes found matching "{searchTerm}"</p>
+            </div>
+          ) : (
+            filteredProfiles.map((p, i) => (
+              <div key={p.id || i} onClick={() => navigate(`/chats/new`, { state: { otherUser: p } })} className="relative group bg-[#111] border border-white/5 rounded-2xl overflow-hidden cursor-pointer hover:border-cyan-500/50 transition duration-300 active:scale-95 shadow-lg">
+                {/* Image Layer */}
+                <div className="aspect-[4/5] bg-gray-800 relative overflow-hidden">
+                  <img src={p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`} className="w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
+
+                  {/* Premium Badge */}
+                  {p.is_premium && (
+                    <div className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                      <span className="animate-pulse">★</span> PRO
+                    </div>
+                  )}
+                </div>
+
+                {/* Info Layer */}
+                <div className="absolute bottom-0 left-0 w-full p-3">
+                  <h3 className="text-white font-bold text-lg leading-tight flex items-center gap-1">
+                    {p.username}
+                    {p.age && <span className="text-sm font-normal opacity-70">, {p.age}</span>}
+                    {p.is_premium && <div className="ml-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center"><Check size={8} className="text-white" /></div>}
+                  </h3>
+                  <p className="text-xs text-cyan-400 font-medium truncate mb-1">{p.location || 'Vibe City'}</p>
+                  <p className="text-[11px] text-white/60 line-clamp-1">{p.bio || 'Ready to connect.'}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Redefine Profile Page to include Edit Button
 const ProfilePage = ({ user, userData, onLogout, onUpdate }) => {
   const [showEdit, setShowEdit] = useState(false);
@@ -1453,7 +1559,7 @@ const MainApp = ({ user, userData, onLogout, onUpdate }) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'feed': return <Feed onMessage={(u) => setActiveTab('messages')} />;
-      case 'search': return <Discover user={user} userData={userData} />;
+      case 'search': return <AdvancedSearch user={user} />;
       case 'reels': return <Reels onMessage={(u) => setActiveTab('messages')} />;
       case 'messages': return <MessagesList activeUser={user} navigate={setActiveTab} />;
       case 'profile': return <ProfileView user={{ ...user, ...userData }} onLogout={onLogout} />;
