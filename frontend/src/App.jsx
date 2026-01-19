@@ -566,6 +566,7 @@ const generateMockReels = (count = 50) => {
 };
 
 const Feed = ({ onMessage }) => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
