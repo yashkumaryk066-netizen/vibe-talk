@@ -91,13 +91,32 @@ const generateSmartReply = (text, conversationCount = 0, botName = "Ananya", bot
   }
 
   // 🎤 Voice Chat Prompt (ONLY if not already suggested and call isn't failing)
-  if (conversationCount >= 4 && Math.random() > 0.7 &&
-    !lastBotMessage.includes('call') && !lastBotMessage.includes('voice') &&
+  if (conversationCount >= 5 && Math.random() > 0.8 &&
+    !lastBotMessage.includes('call') && !lastBotMessage.includes('voice') && !lastBotMessage.includes('typing') &&
+    !conversationContext.includes('call') && !conversationContext.includes('voice') &&
     !conversationContext.includes('call ho nhi') && !conversationContext.includes('call nahi') &&
     !conversationContext.includes('call not working')) {
     return [
       "Btw, text boring lag raha? Voice call try karte hain! 📞",
       "Typing thak gaye? Call pe baat karte hain! 🎤"
+    ];
+  }
+
+  // 👧 Gender/Identity Questions
+  if (lower.match(/ladki ho|ladka ho|boy ho|girl ho|male|female|gender|लड़की|लड़का/)) {
+    return [
+      "Haan main ladki hoon! 😊 Obvious nahi tha kya? Tumhara naam kya hai btw?",
+      "Girl hoon yaar! 💁‍♀️ Name toh batao tumhara?",
+      "Ladki hoon obviously! 😄 Tum batao, tumhara kya naam hai?"
+    ];
+  }
+
+  // 📛 Name Exchange (User offering their name)
+  if (lower.match(/mera naam|mera name|my name|main hoon|i am|i'm|naam janna|name janna/)) {
+    return [
+      "Haan haan bilkul! Batao batao 😊 Tumhara naam kya hai?",
+      "Ofcourse! Main sunna chahti hoon 💫 Kya naam hai?",
+      "Yes please! Naam batao 😄 Main curious hoon!"
     ];
   }
 
