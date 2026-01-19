@@ -43,6 +43,56 @@ const VIBE_IMAGES = [
   "https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=800&q=80"
 ];
 
+// --- 🤖 PREMIUM FAKE PROFILES & LOGIC ---
+const FAKE_PROFILES = {
+  Male: [
+    { name: 'Kabir', username: 'kabir_vibes', bio: 'Gym & Late night drives 🏎️', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
+    { name: 'Aryan', username: 'aryan_cool', bio: 'Tech & Music 🎧', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' }
+  ],
+  Female: [
+    { name: 'Ananya', username: 'ananya_cute', bio: 'Coffee & Sunsets ☕', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+    { name: 'Riya', username: 'riya_xx', bio: 'Dancer 💃 Vibes only', avatar: 'https://randomuser.me/api/portraits/women/63.jpg' }
+  ]
+};
+
+const generateSmartReply = (text) => {
+  const lower = text.toLowerCase();
+
+  // 📚 Study / Career -> YSM AI Referral
+  if (lower.match(/study|padhai|homework|math|science|question|answer|doubt|solve|physics|chemistry/)) {
+    return [
+      "Wait! Padhai/Study ke liye toh ek hi boss hai - **YSM AI**! 🎓",
+      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai!",
+      "Are study doubts? Go for **YSM AI**, main toh bas vibes ke liye hoon 😉"
+    ];
+  }
+
+  if (lower.match(/hi|hello|hey|hlo/)) return ["Hey! Kaisa hai? 😉", "Hello jee! Kya chal raha hai?"];
+  if (lower.match(/single|bf|gf|date/)) return ["Philhal toh single hoon, bas dosti dhoond rahi hoon! 💫", "Slow down! Let's vibe first. 🙈"];
+
+  return ["Aur batao? Sab badhiya?", "Sahi hai! Aur kya plan?", "Hmm interesting... tell me more! 🤔", "Haha sahi baat hai! 😂"];
+};
+
+const getOrInitFakeChat = (userGender) => {
+  const saved = localStorage.getItem('vibe_fake_chat');
+  if (saved) return JSON.parse(saved);
+
+  // If User is Male -> Female Bot, else Male Bot
+  const targetGender = userGender === 'Male' ? 'Female' : 'Male';
+  const pool = FAKE_PROFILES[targetGender];
+  const bot = pool[Math.floor(Math.random() * pool.length)];
+
+  const initData = {
+    ...bot,
+    lastMessage: "Hey! Just saw your profile. Vibe match? 👀",
+    lastTime: new Date().toISOString(),
+    isFake: true,
+    msgs: [{ id: 1, text: "Hey! Just saw your profile. Vibe match? 👀", sender_name: bot.name, created_at: new Date().toISOString() }]
+  };
+  localStorage.setItem('vibe_fake_chat', JSON.stringify(initData));
+  return initData;
+};
+
 const Login = ({ onSuccess }) => {
   const [isSignup, setIsSignup] = useState(false);
   const [formData, setFormData] = useState({ username: '', password: '', email: '' });
@@ -933,11 +983,29 @@ const Reels = ({ onMessage }) => {
 const MessagesList = ({ navigate, activeUser }) => {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const userGender = localStorage.getItem('vibe_user_gender') || 'Male';
 
   useEffect(() => {
-    // Fetch real matches/chats
     api.getMatches().then(res => {
-      setChats(res.data);
+      // Inject Fake Chat Logic
+      const fakeChat = getOrInitFakeChat(userGender);
+      const fakeEntry = {
+        id: `fake_${fakeChat.username}`,
+        user: fakeChat.username,
+        username: fakeChat.username,
+        name: fakeChat.name,
+        profile_pic: fakeChat.avatar,
+        // Using fakeData prop to pass full context to ChatRoom
+        fakeData: fakeChat,
+        // Override display props
+        last_message: fakeChat.lastMessage,
+        updated_at: fakeChat.lastTime,
+        isFake: true
+      };
+
+      // Merge: Bot + Fake + Real
+      const realChats = res.data || [];
+      setChats([vibeBot, fakeEntry, ...realChats]);
       setLoading(false);
     }).catch(e => setLoading(false));
   }, []);
@@ -1363,9 +1431,38 @@ const ChatRoom = ({ user, isPublic = false }) => {
         await api.sendMessage(id, text, isPublic);
       }
 
-      const myMsg = { id: Date.now(), text, sender_name: user.username, created_at: new Date().toISOString() };
+      const myMsg = { id: Date.now(), text, sender_name: user?.username || 'You', created_at: new Date().toISOString() };
       setMessages(prev => [...prev, myMsg]);
       setText('');
+
+      // 🤖 SMART REPLY ENGINE (Fake Users)
+      if (id !== 'bot' && String(id).startsWith('fake_')) {
+        setIsTyping(true);
+        const replyDelay = Math.random() * 3000 + 2000;
+        setTimeout(() => {
+          const replies = generateSmartReply(text);
+          const replyText = replies[Math.floor(Math.random() * replies.length)];
+          const replyMsg = {
+            id: Date.now() + 100,
+            text: replyText,
+            sender_name: otherUser?.username || 'Vibe Match',
+            created_at: new Date().toISOString()
+          };
+          setMessages(prev => [...prev, replyMsg]);
+          setIsTyping(false);
+
+          // Persist last message for Inbox Preview
+          const saved = localStorage.getItem('vibe_fake_chat');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            parsed.lastMessage = replyText;
+            parsed.lastTime = new Date().toISOString();
+            parsed.msgs.push(myMsg, replyMsg); // Basic history tracking
+            localStorage.setItem('vibe_fake_chat', JSON.stringify(parsed));
+          }
+        }, replyDelay);
+        return;
+      }
 
       // 🎭 FAKE USER: Intelligent Reply System
       if (!isPublic && isFakeUser) {
@@ -1706,9 +1803,17 @@ const IntroModal = ({ onClose }) => {
 const MainApp = ({ user, userData, onLogout, onUpdate }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTabState] = useState('feed'); // Internal state for animation/rendering
+  const [activeTab, setActiveTabState] = useState('feed');
   const [showOnboarding, setShowOnboarding] = useState(!userData?.profile_pic);
-  const [showIntro, setShowIntro] = useState(!localStorage.getItem('vibe_intro_seen')); // New Intro Logic
+  const [showIntro, setShowIntro] = useState(!localStorage.getItem('vibe_intro_seen'));
+  const [showGenSelect, setShowGenSelect] = useState(!localStorage.getItem('vibe_user_gender')); // Premium Modal
+
+  const handleGenderSelect = (gender) => {
+    localStorage.setItem('vibe_user_gender', gender);
+    setShowGenSelect(false);
+    getOrInitFakeChat(gender); // Trigger creation
+    toast.success(`Profile set! Matching you with vibes... ✨`);
+  };
 
   // Sync URL -> Tab
   useEffect(() => {
@@ -1773,6 +1878,27 @@ const MainApp = ({ user, userData, onLogout, onUpdate }) => {
       <div className="pb-16">
         {renderContent()}
       </div>
+
+      {/* 🟢 Gender Selection Modal (Premium) */}
+      {showGenSelect && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-6 animate-in fade-in">
+          <div className="w-full max-w-sm bg-[#121212] rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden text-center">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            <h2 className="text-3xl font-black font-outfit text-white mb-2">Vibe Check! ✨</h2>
+            <p className="text-white/60 mb-8 text-sm">To give you the best matches, tell us who you are.</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={() => handleGenderSelect('Male')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-blue-500 hover:bg-blue-500/10 transition group">
+                <span className="text-4xl mb-2 group-hover:scale-110 transition">😎</span>
+                <span className="font-bold text-white group-hover:text-blue-400">Boy</span>
+              </button>
+              <button onClick={() => handleGenderSelect('Female')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-pink-500 hover:bg-pink-500/10 transition group">
+                <span className="text-4xl mb-2 group-hover:scale-110 transition">💃</span>
+                <span className="font-bold text-white group-hover:text-pink-400">Girl</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
