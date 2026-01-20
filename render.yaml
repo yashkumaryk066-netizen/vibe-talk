@@ -1,0 +1,49 @@
+# 🚀 VibeTalk - Render.com Deployment Configuration
+# Developer: Yash Ankush Mishra (Rangra Developer)
+
+services:
+  # Backend API Service
+  - type: web
+    name: vibe-talk-backend
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "./backend/build.sh"
+    startCommand: "cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: FRONTEND_URL
+        value: https://vibe-talk-premium-live.netlify.app
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vibe-talk-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: vibe-talk-redis
+          type: redis
+          property: connectionString
+    autoDeploy: true
+    healthCheckPath: /api/health/
+    
+  # Redis Service (for caching & WebSocket)
+  - type: redis
+    name: vibe-talk-redis
+    plan: free
+    ipAllowList: []
+    
+  # PostgreSQL Database
+  - type: database
+    name: vibe-talk-db
+    databaseName: vibetalk
+    user: vibetalk
+    plan: free
+
+# Auto-deploy from GitHub
+repo: https://github.com/YourUsername/vibe-talk

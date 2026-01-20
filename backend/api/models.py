@@ -14,10 +14,15 @@ class Profile(models.Model):
     location = models.CharField(max_length=50, default='India 🇮🇳')
     google_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
     is_premium = models.BooleanField(default=False)
+    premium_expires = models.DateTimeField(null=True, blank=True)  # Premium subscription expiry
     is_bot = models.BooleanField(default=False) # AI Personality Flag
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     google_pic_url = models.URLField(blank=True, null=True) # Fallback for Google Photo
     voice_bio = models.FileField(upload_to='voice_bios/', blank=True, null=True)
+    
+    # Online Status Tracking
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.user.username

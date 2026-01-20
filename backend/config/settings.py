@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-# import dj_database_url
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,16 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^)@n@#4=u94d0za#mza%g0va$%+2y^0gf-yd8%pv2_l2jq2x=v'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^)@n@#4=u94d0za#mza%g0va$%+2y^0gf-yd8%pv2_l2jq2x=v')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*'] # Allow Render/Vercel
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Django Channels ASGI support (must be first)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'channels',  # WebSocket support
     'api',
 ]
 
@@ -73,6 +78,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'  # For WebSocket support
 
 
 # Database
@@ -81,12 +87,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database - Support both SQLite (dev) and PostgreSQL (production)
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Development - SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -128,34 +146,61 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# CORS & CSRF Settings for Production
-CORS_ALLOW_ALL_ORIGINS = True  # Temporarily Open for Netlify Transition
-CORS_ALLOW_CREDENTIALS = True
-
-# CORS_ALLOWED_ORIGINS = [
-#     'https://vibe-talk-earn-yashamishra.vercel.app',
-#     'http://localhost:5173',
-# ]
-
-# Allow all Vercel, Render AND Netlify subdomains via Regex
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'^https://.*\.vercel\.app$',
-    r'^https://.*\.onrender\.com$',
-    r'^https://.*\.netlify\.app$',
-]
+# CORS & CSRF Settings - Environment-based
+if DEBUG:
+    # Development - Allow all
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    # Production - Strict
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOW_CREDENTIALS = True
+    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://vibe-talk-premium-live.netlify.app')
+    CORS_ALLOWED_ORIGINS = [
+        FRONTEND_URL,
+        'http://localhost:5173',  # Dev fallback
+    ]
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r'^https://.*\.netlify\.app$',
+        r'^https://.*\.vercel\.app$',
+        r'^https://.*\.onrender\.com$',
+    ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://vibe-talk-earn-yashamishra.vercel.app',
     'https://*.onrender.com', 
     'https://*.vercel.app',
     'https://*.netlify.app',
     'https://vibe-talk-premium-live.netlify.app',
-    'https://makefriends.ysm.com',
     'http://localhost:5173'
 ]
 
-SESSION_COOKIE_SAMESITE = 'None' # Essential for Cross-Site (Vercel -> Render)
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True     # Required if SameSite is None
-CSRF_COOKIE_SECURE = True
+# Cookie Security
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+# Channels Layer Configuration (Redis for WebSocket)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer' if DEBUG else 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379/0')],
+        } if not DEBUG else {},
+    },
+}
+
+# REST Framework Settings
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
+}
 

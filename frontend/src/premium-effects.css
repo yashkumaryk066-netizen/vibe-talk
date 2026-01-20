@@ -1,0 +1,650 @@
+/* 🎨 VibeTalk - Premium 3D & Neon Effects Library
+   Developer: Yash Ankush Mishra (Rangra Developer)
+   Version: 3.0 ULTRA PREMIUM
+*/
+
+/* ========================================
+   💎 ADVANCED DESIGN TOKENS
+   ======================================== */
+
+:root {
+    /* 3D Shadows */
+    --shadow-3d-sm: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-3d-md: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-3d-lg: 0 16px 32px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.15);
+    --shadow-3d-xl: 0 24px 48px rgba(0, 0, 0, 0.25), 0 12px 24px rgba(0, 0, 0, 0.2);
+
+    /* Neon Glows */
+    --neon-cyan: 0 0 10px #00d2ff, 0 0 20px #00d2ff, 0 0 30px #00d2ff;
+    --neon-purple: 0 0 10px #a855f7, 0 0 20px #a855f7, 0 0 30px #a855f7;
+    --neon-pink: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 30px #ff007f;
+    --neon-green: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981;
+
+    /* Premium Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-elastic: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ========================================
+   🎴 3D CARD TRANSFORMS
+   ======================================== */
+
+.card-3d {
+    transform-style: preserve-3d;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.card-3d:hover {
+    transform: translateY(-8px) rotateX(5deg) rotateY(-5deg) scale(1.02);
+    box-shadow: var(--shadow-3d-xl);
+}
+
+.card-3d-flip {
+    perspective: 1000px;
+}
+
+.card-3d-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+.card-3d-flip:hover .card-3d-flip-inner {
+    transform: rotateY(180deg);
+}
+
+.card-3d-tilt {
+    transform-style: preserve-3d;
+    transition: var(--transition-smooth);
+}
+
+.card-3d-tilt:hover {
+    transform: perspective(1000px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg)) scale3d(1.05, 1.05, 1.05);
+}
+
+/* ========================================
+   ✨ GLASSMORPHISM 2.0 (ULTRA PREMIUM)
+   ======================================== */
+
+.glass-ultra {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-frosted {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(30px) brightness(1.2);
+    -webkit-backdrop-filter: blur(30px) brightness(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   🌟 NEON GLOW EFFECTS
+   ======================================== */
+
+.neon-text-cyan {
+    color: #00d2ff;
+    text-shadow: var(--neon-cyan);
+    animation: neonPulse 2s ease-in-out infinite;
+}
+
+.neon-text-purple {
+    color: #a855f7;
+    text-shadow: var(--neon-purple);
+    animation: neonPulse 2s ease-in-out infinite;
+}
+
+.neon-border-cyan {
+    border: 2px solid #00d2ff;
+    box-shadow:
+        var(--neon-cyan),
+        inset var(--neon-cyan);
+    animation: neonBorderPulse 2s ease-in-out infinite;
+}
+
+@keyframes neonPulse {
+
+    0%,
+    100% {
+        text-shadow: var(--neon-cyan);
+        filter: brightness(1);
+    }
+
+    50% {
+        text-shadow:
+            0 0 15px #00d2ff,
+            0 0 30px #00d2ff,
+            0 0 45px #00d2ff;
+        filter: brightness(1.3);
+    }
+}
+
+@keyframes neonBorderPulse {
+
+    0%,
+    100% {
+        box-shadow: var(--neon-cyan), inset var(--neon-cyan);
+    }
+
+    50% {
+        box-shadow:
+            0 0 15px #00d2ff, 0 0 30px #00d2ff, 0 0 45px #00d2ff,
+            inset 0 0 10px #00d2ff;
+    }
+}
+
+/* ========================================
+   🎆 PARTICLE EFFECTS
+   ======================================== */
+
+.particle-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #00d2ff, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: floatParticle 3s ease-in-out infinite;
+    opacity: 0.6;
+}
+
+@keyframes floatParticle {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.6;
+    }
+
+    90% {
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: translateY(-100vh) translateX(calc(var(--drift, 0px))) scale(0.5);
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   🌊 LIQUID/BLOB ANIMATIONS
+   ======================================== */
+
+.blob-gradient {
+    background: linear-gradient(45deg, #00d2ff, #a855f7, #ff007f);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.morphing-blob {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    animation: blobMorph 8s ease-in-out infinite;
+}
+
+@keyframes blobMorph {
+
+    0%,
+    100% {
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    }
+
+    25% {
+        border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%;
+    }
+
+    50% {
+        border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%;
+    }
+
+    75% {
+        border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%;
+    }
+}
+
+/* ========================================
+   💫 ADVANCED BUTTON EFFECTS
+   ======================================== */
+
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ripple::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-ripple:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-press {
+    transition: var(--transition-bounce);
+    box-shadow: 0 4px 12px rgba(0, 210, 255, 0.3);
+}
+
+.btn-press:active {
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 2px 6px rgba(0, 210, 255, 0.2);
+}
+
+/* ========================================
+   🎭 AURORA GRADIENT BACKGROUNDS
+   ======================================== */
+
+.aurora-bg {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+}
+
+.aurora-bg::before,
+.aurora-bg::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: auroraDrift 20s ease-in-out infinite;
+}
+
+.aurora-bg::before {
+    background: radial-gradient(circle, #00d2ff, transparent);
+    top: -250px;
+    left: -250px;
+    animation-delay: 0s;
+}
+
+.aurora-bg::after {
+    background: radial-gradient(circle, #a855f7, transparent);
+    bottom: -250px;
+    right: -250px;
+    animation-delay: 10s;
+}
+
+@keyframes auroraDrift {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(100px, -100px) scale(1.2);
+    }
+
+    66% {
+        transform: translate(-100px, 100px) scale(0.9);
+    }
+}
+
+/* ========================================
+   ✨ SHIMMER/SHINE EFFECTS
+   ======================================== */
+
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
+    animation: shimmerSlide 3s infinite;
+}
+
+@keyframes shimmerSlide {
+    100% {
+        left: 100%;
+    }
+}
+
+/* ========================================
+   🎨 PREMIUM LOADING ANIMATIONS
+   ======================================== */
+
+.loader-pulse-3d {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #00d2ff, #a855f7);
+    animation: pulse3D 2s ease-in-out infinite;
+    box-shadow: var(--neon-cyan);
+}
+
+@keyframes pulse3D {
+
+    0%,
+    100% {
+        transform: scale(1) rotateX(0);
+        box-shadow: var(--neon-cyan);
+    }
+
+    50% {
+        transform: scale(1.2) rotateX(180deg);
+        box-shadow:
+            0 0 20px #00d2ff,
+            0 0 40px #00d2ff,
+            0 0 60px #00d2ff;
+    }
+}
+
+.loader-orbit {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.loader-orbit::before,
+.loader-orbit::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00d2ff;
+    box-shadow: var(--neon-cyan);
+}
+
+.loader-orbit::before {
+    animation: orbit 1.5s linear infinite;
+    transform-origin: 30px 0;
+}
+
+.loader-orbit::after {
+    animation: orbit 1.5s linear infinite reverse;
+    transform-origin: -30px 0;
+}
+
+@keyframes orbit {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   🎯 MICRO-INTERACTIONS
+   ======================================== */
+
+.hover-lift {
+    transition: var(--transition-smooth);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-3d-lg);
+}
+
+.hover-glow {
+    transition: var(--transition-smooth);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--neon-cyan);
+    border-color: #00d2ff;
+}
+
+.click-bounce {
+    transition: var(--transition-bounce);
+}
+
+.click-bounce:active {
+    transform: scale(0.9);
+}
+
+/* ========================================
+   🌟 FLOATING ELEMENTS
+   ======================================== */
+
+.float-gentle {
+    animation: floatGentle 6s ease-in-out infinite;
+}
+
+@keyframes floatGentle {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.float-rotate {
+    animation: floatRotate 10s linear infinite;
+}
+
+@keyframes floatRotate {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-30px) rotate(180deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(360deg);
+    }
+}
+
+/* ========================================
+   🎪 ADVANCED CARD REVEALS
+   ======================================== */
+
+.reveal-fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes scaleIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Stagger animations */
+.stagger-item {
+    animation: fadeUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.stagger-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.stagger-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.stagger-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.stagger-item:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.stagger-item:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+/* ========================================
+   🎨 PREMIUM TEXT EFFECTS
+   ======================================== */
+
+.text-gradient-animated {
+    background: linear-gradient(90deg,
+            #00d2ff,
+            #a855f7,
+            #ff007f,
+            #00d2ff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientText 4s ease infinite;
+}
+
+@keyframes gradientText {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.text-glitch {
+    position: relative;
+    animation: glitch 3s infinite;
+}
+
+.text-glitch::before,
+.text-glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.8;
+}
+
+.text-glitch::before {
+    color: #00d2ff;
+    animation: glitchBefore 0.3s infinite;
+}
+
+.text-glitch::after {
+    color: #ff007f;
+    animation: glitchAfter 0.3s infinite;
+}
+
+@keyframes glitchBefore {
+
+    0%,
+    100% {
+        transform: translate(0);
+    }
+
+    33% {
+        transform: translate(-2px, 2px);
+    }
+
+    66% {
+        transform: translate(2px, -2px);
+    }
+}
+
+@keyframes glitchAfter {
+
+    0%,
+    100% {
+        transform: translate(0);
+    }
+
+    33% {
+        transform: translate(2px, -2px);
+    }
+
+    66% {
+        transform: translate(-2px, 2px);
+    }
+}
+
+/* ========================================
+   🎁 UTILITY CLASSES
+   ======================================== */
+
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+.preserve-3d {
+    transform-style: preserve-3d;
+}
+
+.backface-hidden {
+    backface-visibility: hidden;
+}
