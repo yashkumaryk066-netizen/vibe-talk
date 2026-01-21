@@ -43,6 +43,9 @@ export const getMatches = () => api.get('/interactions/matches/');
 export const uploadGalleryImage = (profileId, formData) => api.post(`/profiles/${profileId}/upload_gallery/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const getRooms = () => api.get('/rooms/');
 export const startChat = (targetUserId) => api.post('/rooms/start_chat/', { target_user_id: targetUserId });
+export const getChatRoom = (roomId) => api.get(`/rooms/${roomId}/`); // Get Room Details (Permissions)
+export const togglePermission = (roomId, type, action) => api.post(`/rooms/${roomId}/toggle_permission/`, { type, action }); // allow/deny call/video/media
+
 
 // Supports Private OR Public rooms
 export const getMessages = (roomId, isPublic = false) => {

@@ -79,6 +79,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'is_typing': data.get('is_typing', True)
                 }
             )
+
+        elif message_type == 'permission_request':
+            # Broadcast permission request
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'permission_request',
+                    'permission': data.get('permission'),
+                    'sender': self.user.username,
+                    'sender_id': self.user.id
+                }
+            )
+
+        elif message_type == 'permission_update':
+            # Broadcast permission status update (Granted/Denied)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'permission_update',
+                    'permission': data.get('permission'),
+                    'status': data.get('status'),
+                    'sender': self.user.username
+                }
+            )
     
     async def chat_message(self, event):
         """Send message to WebSocket"""
@@ -100,6 +124,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'user': event['user'],
                 'is_typing': event['is_typing']
             }))
+
+    async def permission_request(self, event):
+        """Send permission request to recipient"""
+        if event['sender_id'] != self.user.id:
+            await self.send(text_data=json.dumps({
+                'type': 'permission_request',
+                'permission': event['permission'],
+                'sender': event['sender']
+            }))
+
+    async def permission_update(self, event):
+        """Send permission update to all permissions"""
+        await self.send(text_data=json.dumps({
+            'type': 'permission_update',
+            'permission': event['permission'],
+            'status': event['status'],
+            'sender': event['sender']
+        }))
     
     @database_sync_to_async
     def save_message(self, text):

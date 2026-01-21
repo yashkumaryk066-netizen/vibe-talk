@@ -257,6 +257,31 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         room, created = ChatRoom.objects.get_or_create(user1=u1, user2=u2)
         
         return Response(ChatRoomSerializer(room).data)
+
+    @action(detail=True, methods=['post'])
+    def toggle_permission(self, request, pk=None):
+        """
+        Premium Consent System:
+        Allows users to Grant/Revoke permissions for Calling and Media.
+        In a real scenario, this should be restricted so only the 'receiving' user can grant.
+        For now, we assume the Frontend UI handles the 'Request -> Accept' flow and calls this on Accept.
+        """
+        room = self.get_object()
+        perm_type = request.data.get('type')   # 'call', 'video', 'media'
+        action = request.data.get('action')    # 'allow', 'deny'
+        
+        val = (action == 'allow')
+        
+        if perm_type == 'call':
+            room.can_call = val
+        elif perm_type == 'video':
+            room.can_video = val
+        elif perm_type == 'media':
+            room.can_send_media = val
+            
+        room.save()
+        return Response(ChatRoomSerializer(room).data)
+
     @action(detail=True, methods=['post'])
     def send_message(self, request, pk=None):
         room = self.get_object()

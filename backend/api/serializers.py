@@ -53,7 +53,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     user2_name = serializers.CharField(source='user2.username', read_only=True)
     class Meta:
         model = ChatRoom
-        fields = ['id', 'user1', 'user2', 'user1_name', 'user2_name', 'created_at']
+        fields = ['id', 'user1', 'user2', 'user1_name', 'user2_name', 'created_at', 'can_call', 'can_video', 'can_send_media']
 
 class VoiceRoomSerializer(serializers.ModelSerializer):
     members_count = serializers.SerializerMethodField()

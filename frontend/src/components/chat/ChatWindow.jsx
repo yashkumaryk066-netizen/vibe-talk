@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Video, Camera, Mic, Image, Play, MoreVertical, Shield, Info, StopCircle } from 'lucide-react';
+import { ArrowLeft, Phone, Video, Camera, Mic, Image, Play, MoreVertical, Shield, Info, StopCircle, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api';
 import { generateSmartReply, FAKE_REPLIES } from '../../utils/chatUtils';
@@ -24,6 +24,112 @@ const ChatWindow = ({ user, isPublic = false }) => {
     const fileInputRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
+
+    // 🔒 Premium Consent System State
+    const [permissions, setPermissions] = useState({
+        can_call: false,
+        can_video: false,
+        can_send_media: false
+    });
+    const socketRef = useRef(null);
+
+    // 🟢 WebSocket & Permissions Setup
+    useEffect(() => {
+        if (!id || id === 'bot' || String(id).startsWith('fake_') || id === 'new' || id === 'undefined') return;
+
+        // Fetch Initial Permissions
+        api.getChatRoom(id).then(res => {
+            if (res.data) setPermissions(res.data);
+        }).catch(err => console.log("Room permission fetch warn:", err));
+
+        // Setup WebSocket
+        const wsUrl = import.meta.env.VITE_WS_URL || 'wss://vibe-talk-backend-yash.onrender.com';
+        const socket = new WebSocket(`${wsUrl}/ws/chat/${id}/`);
+        socketRef.current = socket;
+
+        socket.onopen = () => console.log("Chat WS Connected");
+
+        socket.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+
+            // Handle Permission Request (Recipient Side)
+            if (data.type === 'permission_request') {
+                if (data.sender === user.username) return; // Ignore own requests
+
+                toast((t) => (
+                    <div className="flex flex-col gap-3 min-w-[240px] bg-[#1a1a1a] p-3 rounded-xl border border-white/10 shadow-2xl animate-in slide-in-from-top-5">
+                        <div className="flex items-center gap-3">
+                            <Shield className="text-yellow-400 animate-pulse" size={20} />
+                            <div>
+                                <p className="font-bold text-sm text-white">{data.sender} Requesting Access</p>
+                                <p className="text-xs text-white/60 mt-0.5">Wants to use: <b className="text-blue-400 capitalize">{data.permission}</b></p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 w-full mt-1">
+                            <button onClick={() => handlePermissionAction(data.permission, 'allow', t.id)} className="flex-1 bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">
+                                <Check size={14} /> Allow
+                            </button>
+                            <button onClick={() => handlePermissionAction(data.permission, 'deny', t.id)} className="flex-1 bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1">
+                                <X size={14} /> Deny
+                            </button>
+                        </div>
+                    </div>
+                ), { duration: 10000, position: 'top-center' });
+            }
+
+            // Handle Permission Update (Both Sides)
+            if (data.type === 'permission_update') {
+                const keyMap = { 'call': 'can_call', 'video': 'can_video', 'media': 'can_send_media' };
+                const key = keyMap[data.permission];
+                if (key) {
+                    setPermissions(prev => ({ ...prev, [key]: data.status }));
+                    if (data.status) {
+                        toast.success(`${data.permission.toUpperCase()} Unlocked! 🔓`, { icon: '✨', style: { background: '#333', color: '#fff' } });
+                    }
+                }
+            }
+        };
+
+        return () => {
+            if (socket.readyState === 1) socket.close();
+        };
+    }, [id]);
+
+    const handlePermissionAction = async (type, action, toastId) => {
+        toast.dismiss(toastId);
+        try {
+            await api.togglePermission(id, type, action);
+            // Broadcast update via Socket (Client -> Server -> Broadcast)
+            // Note: togglePermission updates DB, but specific broadcast logic relies on client sending update or backend sending it.
+            // Our backend Consumer listens for 'permission_update' from CLIENT to broadcast.
+            if (socketRef.current?.readyState === 1) {
+                socketRef.current.send(JSON.stringify({
+                    type: 'permission_update',
+                    permission: type,
+                    status: (action === 'allow')
+                }));
+            }
+        } catch (e) { toast.error("Action failed"); }
+    };
+
+    const requestPermission = (type) => {
+        if (socketRef.current?.readyState === 1) {
+            socketRef.current.send(JSON.stringify({
+                type: 'permission_request',
+                permission: type
+            }));
+            toast.loading(`Requesting ${type} permission...`, { duration: 3000, style: { background: '#333', color: '#fff' } });
+        } else {
+            // Fallback if socket not ready
+            toast.error("Connecting... Try again.");
+            // Try reconnect
+            const wsUrl = import.meta.env.VITE_WS_URL || 'wss://vibe-talk-backend-yash.onrender.com';
+            if (!socketRef.current || socketRef.current.readyState !== 1) {
+                socketRef.current = new WebSocket(`${wsUrl}/ws/chat/${id}/`);
+            }
+        }
+    };
+
 
     // Determine Room Name/Info
     const roomData = location.state?.room;
@@ -151,6 +257,13 @@ const ChatWindow = ({ user, isPublic = false }) => {
 
     // --- 📸 Media Handlers ---
     const handleImageUpload = (e) => {
+        // PERMISSION CHECK
+        if (!isFakeUser && id !== 'bot' && !String(id).startsWith('fake_') && !permissions.can_send_media) {
+            e.preventDefault();
+            requestPermission('media');
+            return;
+        }
+
         const file = e.target.files[0];
         if (!file) return;
         const formData = new FormData();
@@ -159,6 +272,12 @@ const ChatWindow = ({ user, isPublic = false }) => {
     };
 
     const startRecording = async () => {
+        // PERMISSION CHECK
+        if (!isFakeUser && id !== 'bot' && !String(id).startsWith('fake_') && !permissions.can_send_media) {
+            requestPermission('media');
+            return;
+        }
+
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorderRef.current = new MediaRecorder(stream);
@@ -193,13 +312,22 @@ const ChatWindow = ({ user, isPublic = false }) => {
     };
 
 
-    const handleCall = (type) => {
+    const handleCall = (type) => { // type: 'audio' | 'video'
         if (isFakeUser || id === 'bot') {
             toast.error("Cannot call virtual assistants.");
             return;
         }
+
+        // PERMISSION CHECK
+        const permKey = type === 'audio' ? 'can_call' : 'can_video';
+        if (!isFakeUser && !String(id).startsWith('fake_') && !permissions[permKey]) {
+            requestPermission(type === 'audio' ? 'call' : 'video');
+            return;
+        }
+
         startCall(id, type, otherUser);
     };
+
 
     return (
         <div className="flex flex-col h-screen bg-black text-white font-sans relative overflow-hidden">

@@ -48,6 +48,12 @@ class ChatRoom(models.Model):
     user2 = models.ForeignKey(User, related_name='chat_rooms_2', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     
+    # Permissions / Consent System
+    can_call = models.BooleanField(default=False)
+    can_video = models.BooleanField(default=False)
+    can_send_media = models.BooleanField(default=False)
+
+    
     class Meta:
         unique_together = ('user1', 'user2')
 
