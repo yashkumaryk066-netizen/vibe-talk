@@ -15,9 +15,8 @@ class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def signup(self, request):
         import re
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
+        if not username or not password or not email:
+            return Response({'error': 'All fields are required'}, status=400)
 
         # Basic Email Validation
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -26,9 +25,13 @@ class AuthViewSet(viewsets.ViewSet):
 
         if User.objects.filter(username=username).exists():
             return Response({'error': 'Username taken'}, status=400)
-        user = User.objects.create_user(username=username, password=password, email=email)
-        Profile.objects.create(user=user, name=username)
-        return Response({'status': 'created'}, status=201)
+        
+        try:
+            user = User.objects.create_user(username=username, password=password, email=email)
+            Profile.objects.create(user=user, name=username)
+            return Response({'status': 'created'}, status=201)
+        except Exception as e:
+            return Response({'error': f"Error creating account: {str(e)}"}, status=400)
 
     @action(detail=False, methods=['post'])
     def login(self, request):

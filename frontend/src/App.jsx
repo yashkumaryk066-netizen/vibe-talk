@@ -185,7 +185,7 @@ const Login = ({ onSuccess }) => {
       }
     } catch (err) {
       console.error(err);
-      toast.error(isSignup ? "Username already taken." : "Wrong credentials.", { style: { background: '#333', color: '#fff' } });
+      toast.error(err.response?.data?.error || (isSignup ? "Signup failed." : "Wrong credentials."), { style: { background: '#333', color: '#fff' } });
     } finally {
       setLoading(false);
     }
