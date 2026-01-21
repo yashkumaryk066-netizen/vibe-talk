@@ -280,7 +280,7 @@ const Login = ({ onSuccess }) => {
             <div className="flex items-start gap-2 px-1">
               <input type="checkbox" id="age-confirm" required className="mt-1 w-3 h-3 accent-cyan-500" />
               <label htmlFor="age-confirm" className="text-[10px] text-white/50 leading-tight">
-                I confirm I am <b>18+ years old</b>. I agree to the <span className="text-white/70 underline">Terms</span> & <span className="text-white/70 underline">Safety Policy</span>.
+                I confirm I am <b>18+ years old</b>. I agree to the <Link to="/terms" className="text-white/70 underline hover:text-cyan-400">Terms</Link> & <Link to="/safety" className="text-white/70 underline hover:text-cyan-400">Safety Policy</Link>.
               </label>
             </div>
 
