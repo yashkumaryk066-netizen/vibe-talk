@@ -70,6 +70,7 @@ class Message(models.Model):
     
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='message_images/', blank=True, null=True)
     voice_file = models.FileField(upload_to='voice_notes/', blank=True, null=True)
     audio_url = models.URLField(blank=True, null=True) # For AI Voice Notes
     is_correction = models.BooleanField(default=False)

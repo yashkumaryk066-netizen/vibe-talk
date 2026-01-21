@@ -117,7 +117,9 @@ class AuthViewSet(viewsets.ViewSet):
         if request.user.is_authenticated:
             try:
                 profile = Profile.objects.get(user=request.user)
-                return Response(ProfileSerializer(profile).data)
+                data = ProfileSerializer(profile).data
+                data['username'] = request.user.username  # Explicitly add username
+                return Response(data)
             except Profile.DoesNotExist:
                  return Response({'error': 'Profile not found'}, status=404)
         return Response({'error': 'Not logged in'}, status=403)

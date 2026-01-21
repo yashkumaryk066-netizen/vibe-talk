@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Search, MessageCircle, User, Heart, Send, ArrowLeft, MoreVertical, Edit3, LogOut, Mic, Square, X, Check, Flame, Globe, Camera, Plus, Image, Upload, ChevronDown, Save, Bookmark, Music, Phone, Video } from 'lucide-react';
-import { Toaster, toast } from 'react-hot-toast';
+import { Heart, MessageCircle, User, Settings, Camera, Video, Phone, Send, MoreVertical, Search, Bell, X, Check, Image, Mic, Play, Pause, Volume2, ArrowLeft, Globe, Share2, Edit3, LogOut, Flame, Shield, Layers } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 import confetti from 'canvas-confetti';
-import * as api from './api';
-import AdvancedSearch from './components/AdvancedSearch';
+import api from './api';
+import './App.css';
+import './premium-effects.css';
 
-// Legal Pages
+// Feature Imports
+import { CallProvider } from './context/CallContext';
+import CallOverlay from './components/call/CallOverlay';
+import ChatWindow from './components/chat/ChatWindow';
+import Discover from './components/dating/Discover'; // New Premium Discover
+import UserProfile from './components/user/UserProfile'; // New Premium Profile
 import TermsAndConditions from './pages/TermsAndConditions';
+
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AboutUs from './pages/AboutUs';
 import SafetyGuidelines from './pages/SafetyGuidelines';
@@ -81,212 +88,9 @@ const FAKE_PROFILES = {
     { name: 'Ishita', username: 'ishita_traveler', bio: 'Wanderlust soul 🌍 Beach lover 🏖️', avatar: 'https://randomuser.me/api/portraits/women/50.jpg' },
     { name: 'Zara', username: 'zara_nightowl', bio: 'Night owl 🌙 Late night talks 💬', avatar: 'https://randomuser.me/api/portraits/women/65.jpg' }
   ]
+
 };
 
-const generateSmartReply = (text, conversationCount = 0, botName = "Ananya", botBio = "", recentMessages = []) => {
-  const lower = text.toLowerCase();
-
-  // 🧠 CONTEXT MEMORY: Get last bot response to avoid repetition
-  const lastBotMessage = recentMessages.length > 0 ? recentMessages[recentMessages.length - 1]?.toLowerCase() || '' : '';
-  const conversationContext = recentMessages.join(' ').toLowerCase();
-
-  // 📚 Study / Career -> YSM AI Referral
-  if (lower.match(/study|padhai|homework|math|science|question|answer|doubt|solve|physics|chemistry|exam|test/)) {
-    return [
-      "Wait! Padhai/Study ke liye toh ek hi boss hai - **YSM AI**! 🎓 Wahan advanced help milega!",
-      "Mujhse study mat pucho yaar 🙈, **YSM AI** try karo, wo genius hai! Main toh timepass ke liye hoon 😄"
-    ];
-  }
-
-  // 🎤 Voice Chat Prompt (ONLY if not already suggested and call isn't failing)
-  if (conversationCount >= 5 && Math.random() > 0.8 &&
-    !lastBotMessage.includes('call') && !lastBotMessage.includes('voice') && !lastBotMessage.includes('typing') &&
-    !conversationContext.includes('call') && !conversationContext.includes('voice') &&
-    !conversationContext.includes('call ho nhi') && !conversationContext.includes('call nahi') &&
-    !conversationContext.includes('call not working')) {
-    return [
-      "Btw, text boring lag raha? Voice call try karte hain! 📞",
-      "Typing thak gaye? Call pe baat karte hain! 🎤"
-    ];
-  }
-
-  // 👧 Gender/Identity Questions
-  if (lower.match(/ladki ho|ladka ho|boy ho|girl ho|male|female|gender|लड़की|लड़का/)) {
-    return [
-      "Haan main ladki hoon! 😊 Obvious nahi tha kya? Tumhara naam kya hai btw?",
-      "Girl hoon yaar! 💁‍♀️ Name toh batao tumhara?",
-      "Ladki hoon obviously! 😄 Tum batao, tumhara kya naam hai?"
-    ];
-  }
-
-  // 📛 Name Exchange (User offering their name)
-  if (lower.match(/mera naam|mera name|my name|main hoon|i am|i'm|naam janna|name janna/)) {
-    return [
-      "Haan haan bilkul! Batao batao 😊 Tumhara naam kya hai?",
-      "Ofcourse! Main sunna chahti hoon 💫 Kya naam hai?",
-      "Yes please! Naam batao 😄 Main curious hoon!"
-    ];
-  }
-
-  // 🚫 Call/Technical Issues
-  if (lower.match(/call ho nhi|call nahi|call not working|voice nahi|audio nahi|mic nahi/)) {
-    return [
-      "Oh! Technical issue hai kya? 🤔 Koi baat nahi, text mein hi baat karte hain! Maza aayega 😊",
-      "Arre! Issue ho raha? No worries, messages mein bhi achha hai yaar. Batao kya chal raha hai? 💬",
-      "Achha achha! Call later try kar lena. Abhi text pe hi vibes share karo 😄"
-    ];
-  }
-
-  // 💬 "Ghumne" / Date / Hangout requests
-  if (lower.match(/ghumne|date|milna|meet|hangout|bahar|coffee|movie|dinner/)) {
-    return [
-      "Arre slow down! 😄 Pehle toh achhe se dost ban jaate hain, phir dekhte hain. Online vibes toh strong karo pehle 💫",
-      "Haha! Itni jaldi? 🙈 Pehle thoda aur baat karte hain yaar. Trust banana important hai na!",
-      "Aww cute! 😊 But pehle friendship toh ho jaaye properly. Aur batao apne baare mein kuch?"
-    ];
-  }
-
-  // 👤 Name/Identity Questions
-  if (lower.match(/naam|name|tu kaun|tumhara naam|aapka naam|your name|who are you/)) {
-    return [
-      `Main ${botName} hoon! 😊 ${botBio ? botBio : "Just a simple person!"} Tumhara naam kya hai?`,
-      `${botName} here! Nice to meet you 💫 ${botBio && "Btw, " + botBio} Tum batao apne baare mein?`
-    ];
-  }
-
-  // 🎯 "What do you do" / "Plan" / "Kya karte ho"
-  if (lower.match(/kya karte ho|kya plan|tumhara plan|aapka plan|what do you do|kya kar rahe|free time|hobby/)) {
-    // Extract personality from bio
-    const interests = botBio.toLowerCase();
-    let activity = "chill kar rahi hoon";
-    if (interests.includes('music')) activity = "music sun rahi thi";
-    else if (interests.includes('gym') || interests.includes('fitness')) activity = "gym se aayi hoon";
-    else if (interests.includes('game') || interests.includes('gamer')) activity = "gaming kar rahi thi";
-    else if (interests.includes('book')) activity = "book padh rahi thi";
-    else if (interests.includes('netflix')) activity = "series dekh rahi thi";
-
-    return [
-      `Abhi toh ${activity} 😊 ${botBio} Tumhara kya scene hai aaj?`,
-      `Bas timepass! ${botBio} Free time mein usually chill karti hoon. Tum kya karte ho?`
-    ];
-  }
-
-  // 😴 Sleep/Rest responses
-  if (lower.match(/sota|sleep|rest|aaraam|thak gaya|thak gayi|bore|boring/)) {
-    return [
-      "Haha same yaar! 😂 Main bhi lazy person hoon. Chill vibes best hai 💤",
-      "Relatable! 😴 Kabhi kabhi bas aise hi timepass karna achha lagta hai",
-      "Sahi hai! Rest is important. Main bhi zyada active nahi rehti 😅 Bas vibe lete hain"
-    ];
-  }
-
-  // 🎮 Interests shared by user (echo back)
-  if (lower.match(/music|gaana|song|gaming|game|movie|film|series|netflix|youtube|anime/)) {
-    const topic = lower.includes('music') || lower.includes('gaana') || lower.includes('song') ? 'music' :
-      lower.includes('game') || lower.includes('gaming') ? 'gaming' :
-        lower.includes('anime') ? 'anime' :
-          lower.includes('movie') || lower.includes('film') ? 'movies' : 'series';
-
-    return [
-      `Ohh nice! ${topic} mujhe bhi pasand hai! 🔥 Favorite kya hai tumhara?`,
-      `Same interest! 😍 Main bhi ${topic} enjoy karti hoon. Recommend kuch karo?`,
-      `Sahi choice! ${topic} ke bina toh boring ho jaata hai. Kya dekhते/sुnte ho?`
-    ];
-  }
-
-  // 👋 Greetings
-  if (lower.match(/^(hi|hello|hey|hlo|sup|kya hal|namaste|hii|heyyy)$/)) {
-    return [
-      "Heyyy! Kaisa chal raha hai? 😊 Sab badhiya?",
-      "Hello ji! Kya haal? Aaj kuch special? 🌟",
-      "Heyy! Nice to see you 💫 Batao kya chal raha hai요즘?"
-    ];
-  }
-
-  // 💕 Relationship/Dating (reading context - if already answered, be consistent)
-  if (lower.match(/single|bf|gf|date|love|crush|shaadi|relationship|pyar/)) {
-    if (conversationContext.includes('single')) {
-      // Already answered before, so be consistent
-      return [
-        "Haan yaar single hi hoon 😊 Bas achhe dosto ki talash hai. Tumhara kya scene?",
-        "Single life enjoy kar rahi hoon 😄 No drama, no stress. Tum batao?"
-      ];
-    }
-    return [
-      "Haha! Single hoon 😅 Bas achhe dost dhoond rahi hoon. Tum batao?",
-      "Slow down yaar! 🙈 Pehle friendship toh ho jaaye, phir deखते hain 😄",
-      "Direct questions 😂 Pehle vibes toh match karne do! Single ho?"
-    ];
-  }
-
-  // 🤔 Questions back at bot (about personality)
-  if (lower.match(/tum kaisi ho|tumhare baare|about you|tum|aap|tumhe|tumhare|tumhari|your|you are/)) {
-    return [
-      `Main? 😊 ${botBio} Basically chill vibes wali hoon. Tumhare baare mein batao?`,
-      `${botBio} Bas simple person hoon yaar. Coffee, good convos aur chill - ye sab pasand hai 😄 Tum?`,
-      `Mujhe simple cheezen pasand hain - ${botBio} Tumhara style kya hai?`
-    ];
-  }
-
-  // 😊 Positive responses (good/fine/nice)
-  if (lower.match(/good|fine|achha|badhiya|theek|mast|sahi|nice|great|awesome|haan|yes/)) {
-    return [
-      "That's great! 🎉 Btw, koi favorite music genre hai?",
-      "Nice nice! Mera bhi achha chal raha hai 😊 Tumhe travel karna pasand hai?",
-      "Sahi hai yaar! Weekend plans kya hain usually? 🤔"
-    ];
-  }
-
-  // ❓ General questions (kya/kaise/kab/kyu) - but NOT if already covered
-  if (lower.match(/kya|kaise|kahan|kab|kyu|kyun|why|what|how|where|when/) && text.includes('?') &&
-    !lower.match(/naam|karte ho|plan/)) {  // Exclude already handled questions
-    return [
-      "Hmm good question! 🤔 Main khud soch rahi hoon. Tumhara kya lagta hai?",
-      "Interesting sawaal! 😊 Pehle tum batao tumhara perspective, phir main bolu",
-      "Soch ke bataungi 😄 But pehle ye batao - tumhara experience kya hai?"
-    ];
-  }
-
-  // 😂 LOL/Haha
-  if (lower.match(/lol|haha|😂|🤣|funny|mazak|joke/)) {
-    return [
-      "Haha seriously! 😂 Tumhara sense of humor mast hai yaar!",
-      "🤣 Exactly! Aise hi vibes chahiye. Aur batao?",
-      "Lolll! 😄 Tum interesting ho. Keep the vibes going!"
-    ];
-  }
-
-  // 🌙 Good night/morning
-  if (lower.match(/good night|gn|so jao|bye|sleep|neend/)) {
-    return [
-      "Good night! 🌙 Sweet dreams. Message kar dena kal 😊",
-      "Achha so jao! 😴 Take care. Talk soon? 💫",
-      "GN! 💤 Rest well. Kal baat karenge pakka 🌟"
-    ];
-  }
-
-  if (lower.match(/good morning|gm|morning|subah|uth gaye/)) {
-    return [
-      "Good morning! ☀️ Neend kaisi rahi? Ready for today?",
-      "Morning! 🌅 Breakfast ho gaya? Kya plan hai aaj?",
-      "GM! 😊 Fresh vibes! Coffee/chai pee lo aur batao"
-    ];
-  }
-
-  // 🎯 Default Contextual Responses (varied, natural)
-  const contextualReplies = [
-    "Haan sahi! 😊 Btw, tumhe kaunsi cheez sabse zyada pasand hai?",
-    "Achha achha! Interesting 🤔 Music sunna pasand hai?",
-    "Nice yaar! Main bhi similar sochti hoon 💫 Tum introvert ho ya extrovert?",
-    "Relatable! 😄 Favorite timepass kya hai tumhara?",
-    "Hmm makes sense! 🎵 Koi dream destination hai travel ke liye?",
-    "Sahi baat hai! Main bhi 😊 Coffee lover ho ya chai person?",
-    "Cool! Weekends mein kya karte ho usually?",
-    "Interesting! Mujhe bhi lagta hai ऐसा. Aur batao?"
-  ];
-
-  return [contextualReplies[Math.floor(Math.random() * contextualReplies.length)]];
-};
 
 const getOrInitFakeChat = (userGender) => {
   const saved = localStorage.getItem('vibe_fake_chat');
@@ -1553,318 +1357,8 @@ const PublicRooms = () => {
   );
 };
 
-// --- 💬 Premium Instagram-Style Chat ---
-// --- 🎭 FAKE USER ENGINE (Premium Feature) ---
-const FAKE_REPLIES = {
-  greeter: [
-    "Hey! 👋 Welcome to VibeTalk.",
-    "Hi there! Kaha se ho aap? 😄",
-    "Yo! New here? Voice call try kiya? 🎧",
-    "Namaste! 🙏 Vibe match karein?"
-  ],
-  icebreaker: [
-    "Truth or Dare kheloge? 😉",
-    "Night owl ho ya Morning person? 🦉",
-    "Favorite song konsa hai aajkal? 🎵",
-    "Tea or Coffee? choose wisely ☕",
-    "Agar ek superpower milti, toh kya hoti?"
-  ],
-  support: [
-    "Safety tip: Kabhi bhi apna private number share mat karna. 🛡️",
-    "Agar koi tang kare toh upar 'Report' button hai. 🚩",
-    "Voice connect kaise karna hai batau? 📞"
-  ],
-  general: [
-    "Haha sahi hai! 😂",
-    "Voice call pe connect karein? Jyada maza aayega 🎧",
-    "Acha? Fir kya hua?",
-    "Hmm interesting... tell me more!",
-    "Message me bore ho raha hu, call? 📞"
-  ]
-};
-
-// --- 💬 Premium Instagram-Style Chat with FAKE USER LOGIC ---
-const ChatRoom = ({ user, isPublic = false }) => {
-  const params = useParams();
-  const location = useLocation();
-  const navigate = useNavigate();
-  // Fallback: Extract ID from URL if Route params fail (due to custom MainApp navigation)
-  const id = params.id || location.pathname.split('/chats/')[1]?.split('/')[0] || location.pathname.split('/public-chat/')[1]?.split('/')[0];
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const chatEndRef = useRef(null);
-
-  // Determine Room Name/Info
-  const roomData = location.state?.room;
-  const otherUser = location.state?.otherUser || (id === 'bot' ? { username: 'Vibe Assistant', isFake: true, profile_pic: null } : { username: 'Vibe User', profile_pic: null, isFake: false });
-  const isFakeUser = otherUser.isFake || otherUser.username === 'Vibe Assistant' || id === 'bot';
-  const chatTitle = isPublic ? (roomData?.name || 'Public Room') : (otherUser.username || "Vibe Match");
-  const chatAvatar = isPublic ? null : (otherUser.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${otherUser.username || 'user'}`);
-
-  // Auto-Unlocking logic (Premium)
-  const [isLocked, setIsLocked] = useState(false); // Can be set based on logic, keeping unlocked for now as User preferred Call Connect -> Unlock, but we simulate unlocked for specific flows.
-
-  // Fetch Logic
-  const loadMessages = async () => {
-    // Safety check for invalid/undefined ID or 'new' placeholder
-    if (!id || id === 'undefined' || id === 'null' || id === 'new') return;
-
-    // Skip backend call for BOT
-    // 🤖 BOT HANDLING
-    if (id === 'bot') {
-      const botMsgs = [
-        { id: 1, text: "Welcome to VibeTalk! 🛡️ I'm here to guide you.", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 10000).toISOString() },
-        { id: 2, text: "Tap call button to try our Voice feature 📞", sender_name: 'Vibe Assistant', created_at: new Date(Date.now() - 5000).toISOString() }
-      ];
-      if (messages.length === 0 && !isTyping) setMessages(botMsgs);
-      return;
-    }
-
-    // 🎭 FAKE USER HANDLING (Client-Side Only)
-    if (String(id).startsWith('fake_')) {
-      // Load from localStorage to keep sync
-      const saved = localStorage.getItem('vibe_fake_chat');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Ensure we are loading the correct fake chat
-        if (`fake_${parsed.username}` === id) {
-          setMessages(parsed.msgs || []);
-        }
-      }
-      return; // ⛔ STOP: Do not call API
-    }
-
-    try {
-      const res = await api.getMessages(id, isPublic);
-      const newMsgs = res.data;
-      if (newMsgs.length > messages.length) setIsTyping(false);
-      setMessages(newMsgs);
-    } catch (err) { console.error(err); }
-  };
-
-  useEffect(() => {
-    loadMessages();
-    const interval = setInterval(loadMessages, 1000); // Faster sync for local sim
-    return () => clearInterval(interval);
-  }, [id, messages.length, isFakeUser]); // Re-run if ID checks
-
-  // (Removed redundant 'Initial Greeting' logic - handled by getOrInitFakeChat)
-
-
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!text.trim() || !id || id === 'undefined') return;
-    try {
-      // Mock Send for BOT or FAKE USER
-      if (id !== 'bot' && !String(id).startsWith('fake_')) {
-        await api.sendMessage(id, text, isPublic);
-      }
-
-      const myMsg = { id: Date.now(), text, sender_name: user?.username || 'You', created_at: new Date().toISOString() };
-      setMessages(prev => [...prev, myMsg]);
-      setText('');
-
-      // 🤖 SMART REPLY ENGINE (Fake Users)
-      if (id !== 'bot' && String(id).startsWith('fake_')) {
-        setIsTyping(true);
-        const replyDelay = Math.random() * 3000 + 2000;
-        setTimeout(() => {
-          // Get conversation count from localStorage
-          const saved = localStorage.getItem('vibe_fake_chat');
-          const conversationCount = saved ? (JSON.parse(saved).conversationCount || 0) : 0;
-
-          const botName = otherUser?.name || otherUser?.username || 'Ananya';
-          const botBio = otherUser?.bio || otherUser?.fakeData?.bio || '';
-
-          // Get last 3 messages for context (alt user + bot messages)
-          const recentMessages = messages.slice(-6).map(m => m.text).filter(Boolean);
-
-          const replies = generateSmartReply(text, conversationCount, botName, botBio, recentMessages);
-          const replyText = replies[Math.floor(Math.random() * replies.length)];
-          const replyMsg = {
-            id: Date.now() + 100,
-            text: replyText,
-            sender_name: otherUser?.username || 'Vibe Match',
-            created_at: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, replyMsg]);
-          setIsTyping(false);
-
-          // Persist last message for Inbox Preview + Increment conversation count
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            parsed.lastMessage = replyText;
-            parsed.lastTime = new Date().toISOString();
-            parsed.conversationCount = (parsed.conversationCount || 0) + 1; // Increment
-            parsed.msgs.push(myMsg, replyMsg); // Basic history tracking
-            localStorage.setItem('vibe_fake_chat', JSON.stringify(parsed));
-          }
-        }, replyDelay);
-        return;
-      }
-
-      // 🎭 FAKE USER: Intelligent Reply System
-      if (!isPublic && isFakeUser) {
-        // 1. Random delay 10s - 20s
-        const replyDelay = Math.random() * 5000 + 2000; // Faster for testing
-
-        setTimeout(() => {
-          setIsTyping(true);
-
-          // 2. Typing for 2-4s
-          setTimeout(() => {
-            let replyText;
-            if (otherUser.username === 'Vibe Assistant') { // Bot Logic
-              const lower = text.toLowerCase();
-              if (lower.includes('report') || lower.includes('safe') || lower.includes('block')) replyText = FAKE_REPLIES.support[1];
-              else if (lower.includes('call') || lower.includes('voice')) replyText = FAKE_REPLIES.support[2];
-              else replyText = "I'm a bot! For real connections, go to the 'Search' tab and find a vibe match! 🚀";
-            } else {
-              // Random Vibes
-              const categories = ['general', 'icebreaker'];
-              if (text.length < 5) categories.push('greeter');
-              const cat = categories[Math.floor(Math.random() * categories.length)];
-              replyText = FAKE_REPLIES[cat][Math.floor(Math.random() * FAKE_REPLIES[cat].length)];
-            }
-
-            const fakeMsg = {
-              id: Date.now(),
-              text: replyText,
-              sender_name: otherUser.username,
-              created_at: new Date().toISOString()
-            };
-            setMessages(prev => [...prev, fakeMsg]);
-            setIsTyping(false);
-          }, 2000); // 2s typing
-
-        }, replyDelay);
-      }
-
-    } catch (e) { toast.error("Failed to send"); }
-  };
-
-  return (
-    <div className="flex flex-col h-screen bg-black text-white font-sans">
-      {/* 🟢 Header */}
-      <div className="h-16 flex items-center px-4 border-b border-white/10 bg-black/90 backdrop-blur sticky top-0 z-50">
-        <ArrowLeft size={24} className="mr-4 cursor-pointer hover:scale-110 transition" onClick={() => navigate(-1)} />
-
-        {!isPublic && (
-          <div className={`w-10 h-10 rounded-full overflow-hidden mr-3 border-2 p-0.5 ${otherUser.username === 'Vibe Assistant' ? 'border-blue-500' : 'border-green-500'}`}>
-            <img src={chatAvatar} className="w-full h-full object-cover rounded-full bg-gray-800" />
-            {otherUser.username === 'Vibe Assistant' && <div className="absolute bottom-3 left-12 w-4 h-4 bg-blue-500 border-2 border-black rounded-full flex items-center justify-center text-[8px] font-bold">✓</div>}
-          </div>
-        )}
-
-        <div className="flex-1 cursor-pointer">
-          <h3 className="font-bold text-base leading-tight flex items-center gap-1">{chatTitle} {isPublic && <span className="bg-red-500 text-[8px] px-1 rounded text-white font-bold">LIVE</span>}</h3>
-          {!isPublic ? (
-            <span className={`text-xs font-medium ${otherUser.username === 'Vibe Assistant' ? 'text-blue-400' : 'text-green-400'}`}>{otherUser.username === 'Vibe Assistant' ? 'Official Bot' : 'Online now'}</span>
-          ) : (
-            <span className="text-xs text-white/50">{Math.floor(Math.random() * 200) + 10} vibing</span>
-          )}
-        </div>
-
-        <div className="flex gap-6 opacity-80">
-          <Phone size={24} className="hover:text-green-400 transition cursor-pointer" />
-          <Video size={24} className="hover:text-blue-400 transition cursor-pointer" />
-        </div>
-      </div>
-
-      {/* 🟢 Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-black">
-        {/* Welcome Placeholder */}
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center opacity-40 mt-32 animate-in fade-in zoom-in duration-500">
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 text-5xl shadow-[0_0_30px_rgba(0,0,0,0.4)] ${otherUser.username === 'Vibe Assistant' ? 'bg-blue-600 shadow-blue-500/40' : 'bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-cyan-500/40'}`}>
-              <img src={chatAvatar} className="w-22 h-22 rounded-full opacity-80" />
-            </div>
-            <p className="font-bold text-lg">{otherUser.username === 'Vibe Assistant' ? 'Vibe Assistant' : "It's a Match! 🔥"}</p>
-            <p className="text-xs opacity-70">{otherUser.username === 'Vibe Assistant' ? 'Here to help & guide you.' : "Don't be shy, say hi."}</p>
-          </div>
-        )}
-
-        {messages.map((msg, i) => {
-          const isMe = msg.sender_name === user.username;
-          const showAvatar = !isMe && (i === 0 || messages[i - 1].sender_name !== msg.sender_name);
-
-          return (
-            <div key={i} className={`flex gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
-              {!isMe && (
-                <div className={`w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 self-end mb-1 ${!showAvatar && 'opacity-0'}`}>
-                  <img src={otherUser.username === 'Vibe Assistant' ? chatAvatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender_name}`} className="w-full h-full object-cover" />
-                </div>
-              )}
-
-              <div className={`max-w-[75%] px-4 py-2.5 text-sm rounded-2xl shadow-sm ${isMe
-                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-br-sm'
-                : 'bg-[#262626] text-white rounded-bl-sm border border-white/5'
-                }`}>
-                {msg.text && <p className="leading-snug">{msg.text}</p>}
-                {msg.audio_url && (
-                  <div className="flex items-center gap-3 mt-1 min-w-[120px]">
-                    <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition"><Play size={14} fill="white" /></div>
-                    <div className="h-8 flex items-center gap-0.5">
-                      {[...Array(10)].map((_, j) => <div key={j} className="w-1 bg-white/40 rounded-full" style={{ height: Math.random() * 15 + 5 + 'px' }}></div>)}
-                    </div>
-                  </div>
-                )}
-                <span className="text-[9px] opacity-40 block text-right mt-1 font-medium">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* REALISTIC TYPING INDICATOR */}
-        {isTyping && (
-          <div className="flex gap-2 justify-start animate-in fade-in slide-in-from-bottom-2">
-            <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0 self-end mb-1 border border-white/10">
-              <img src={chatAvatar} className="w-full h-full object-cover" />
-            </div>
-            <div className="bg-[#262626] border border-white/5 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5 h-10 w-16">
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-            </div>
-          </div>
-        )}
-
-        <div ref={chatEndRef}></div>
-      </div>
-
-      {/* 🟢 Input Area */}
-      <div className="p-3 bg-black border-t border-white/10 flex items-center gap-3 pb-8">
-        <div className="bg-[#262626] p-2.5 rounded-full cursor-pointer hover:bg-white/20 transition active:scale-90">
-          <Camera size={22} className="text-blue-500" />
-        </div>
-
-        <form onSubmit={handleSend} className="flex-1 bg-[#121212] rounded-full flex items-center px-5 py-3 border border-white/10 focus-within:border-blue-500/50 transition shadow-inner">
-          <input
-            className="bg-transparent border-none outline-none text-base text-white flex-1 placeholder-zinc-500"
-            placeholder={isLocked ? "Chat locked (Connect Voice First)" : "Message..."}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            disabled={isLocked}
-          />
-          {text.trim() ? (
-            <button type="submit" className="text-blue-500 font-bold text-sm ml-2 hover:text-blue-400 transition">Send</button>
-          ) : (
-            <div className="flex gap-4 opacity-50 pr-1">
-              <Mic size={22} className="hover:text-white transition cursor-pointer" />
-              <Image size={22} className="hover:text-white transition cursor-pointer" />
-            </div>
-          )}
-        </form>
-      </div>
-    </div>
-  );
-};
+// ChatRoom moved to components/chat/ChatWindow.jsx
+// FAKE_REPLIES moved to utils/chatUtils.js
 
 // --- Main App & Navigation ---
 
@@ -2092,108 +1586,103 @@ const MainApp = ({ user, userData, onLogout, onUpdate }) => {
 
     // Special handling for sub-routes if they are not full pages in Router but overlay
     if (location.pathname.startsWith('/chats/') && location.pathname !== '/chats') {
-      // This implies we are inside a chat. 
-      // We can return <ChatRoom /> here directly via Router or pass props?
-      // The original code had <ChatRoom> in Routes? No, it was single page.
-      return <ChatRoom user={user} />;
+      return <ChatWindow user={user} />;
     }
     if (location.pathname.startsWith('/public-chat/')) {
-      return <ChatRoom user={user} isPublic={true} />;
+      return <ChatWindow user={user} isPublic={true} />;
     }
 
     switch (activeTab) {
-      case 'feed': return <Feed onMessage={() => navigate('/chats')} />;
+      case 'discover': return <Discover user={user} />;
       case 'search': return <AdvancedSearch user={user} />;
       case 'rooms': return <PublicRooms />;
       case 'reels': return <Reels onMessage={() => navigate('/chats')} />;
       case 'messages': return <MessagesList activeUser={user} navigate={navigate} />;
-      case 'matches': return <div className="screen center-content p-4 text-center"><Heart size={48} className="text-red-500 mb-2 animate-bounce" /><h2 className="text-xl font-bold">Matches</h2><p className="opacity-50">You're too popular! (Coming Soon)</p></div>; // Premium Placeholder
+      case 'matches': return <Matches />;
       case 'profile':
         if (location.state?.user && location.state.user.username !== user.username) {
-          return <ProfileView user={location.state.user} isOwnProfile={false} />;
+          return <UserProfile user={location.state.user} isOwnProfile={false} />;
         }
-        return <ProfileView user={{ ...user, ...userData }} isOwnProfile={true} onLogout={onLogout} />;
-      default: return <Feed />;
+        return <UserProfile user={{ ...user, ...userData }} isOwnProfile={true} onLogout={onLogout} onEdit={() => setShowOnboarding(true)} />;
+      default: return <Discover user={user} />;
     }
   };
 
   return (
-    <div className="bg-black text-white min-h-screen relative font-sans">
-      {/* Main Content Area */}
-      <div className="pb-16">
-        {renderContent()}
-      </div>
-
-      {/* 🟢 Gender Selection Modal (Premium) */}
-      {showGenSelect && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-6 animate-in fade-in">
-          <div className="w-full max-w-sm bg-[#121212] rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden text-center">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-            <h2 className="text-3xl font-black font-outfit text-white mb-2">Vibe Check! ✨</h2>
-            <p className="text-white/60 mb-8 text-sm">To give you the best matches, tell us who you are.</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => handleGenderSelect('Male')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-blue-500 hover:bg-blue-500/10 transition group">
-                <span className="text-4xl mb-2 group-hover:scale-110 transition">😎</span>
-                <span className="font-bold text-white group-hover:text-blue-400">Boy</span>
-              </button>
-              <button onClick={() => handleGenderSelect('Female')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-pink-500 hover:bg-pink-500/10 transition group">
-                <span className="text-4xl mb-2 group-hover:scale-110 transition">💃</span>
-                <span className="font-bold text-white group-hover:text-pink-400">Girl</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
-        <div onClick={() => setActiveTab('feed')} className={`cursor-pointer transition ${activeTab === 'feed' ? 'scale-110 text-white' : 'text-white/50'}`}>
-          {activeTab === 'feed' ? <Heart size={28} className="fill-white" /> : <Heart size={28} />}
+    <CallProvider user={user}>
+      <CallOverlay />
+      <div className="bg-black text-white min-h-screen relative font-sans">
+        {/* Main Content Area */}
+        <div className="pb-16">
+          {renderContent()}
         </div>
 
-        <div onClick={() => setActiveTab('search')} className={`cursor-pointer transition ${activeTab === 'search' ? 'scale-110 text-white' : 'text-white/50'}`}>
-          <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
-        </div>
 
-        <div onClick={() => setActiveTab('reels')} className={`cursor-pointer transition ${activeTab === 'reels' ? 'scale-110' : 'opacity-80'}`}>
-          <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 p-[2px] rounded-lg">
-            <div className="bg-black rounded-[6px] p-1">
-              <div className="w-5 h-5 border-2 border-white rounded-[2px] flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+        {/* 🟢 Gender Selection Modal (Premium) */}
+        {showGenSelect && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-6 animate-in fade-in">
+            <div className="w-full max-w-sm bg-[#121212] rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden text-center">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+              <h2 className="text-3xl font-black font-outfit text-white mb-2">Vibe Check! ✨</h2>
+              <p className="text-white/60 mb-8 text-sm">To give you the best matches, tell us who you are.</p>
+              <div className="grid grid-cols-2 gap-4">
+                <button onClick={() => handleGenderSelect('Male')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-blue-500 hover:bg-blue-500/10 transition group">
+                  <span className="text-4xl mb-2 group-hover:scale-110 transition">😎</span>
+                  <span className="font-bold text-white group-hover:text-blue-400">Boy</span>
+                </button>
+                <button onClick={() => handleGenderSelect('Female')} className="flex flex-col items-center p-6 rounded-2xl bg-[#262626] border border-white/5 hover:border-pink-500 hover:bg-pink-500/10 transition group">
+                  <span className="text-4xl mb-2 group-hover:scale-110 transition">💃</span>
+                  <span className="font-bold text-white group-hover:text-pink-400">Girl</span>
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <div onClick={() => setActiveTab('messages')} className={`cursor-pointer transition ${activeTab === 'messages' ? 'scale-110 text-white' : 'text-white/50'}`}>
-          <div className="relative">
-            <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
-            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black animate-pulse"></div>
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 w-full bg-black border-t border-white/10 flex justify-around items-center py-3 pb-5 z-50 backdrop-blur-md">
+          <div onClick={() => setActiveTab('discover')} className={`cursor-pointer transition ${activeTab === 'discover' ? 'scale-110 text-pink-500' : 'text-white/50'}`}>
+            {activeTab === 'discover' ? <Flame size={28} className="fill-pink-500" /> : <Flame size={28} />}
+          </div>
+
+          <div onClick={() => setActiveTab('search')} className={`cursor-pointer transition ${activeTab === 'search' ? 'scale-110 text-white' : 'text-white/50'}`}>
+            <Search size={28} strokeWidth={activeTab === 'search' ? 3 : 2} />
+          </div>
+
+          <div onClick={() => setActiveTab('rooms')} className={`cursor-pointer transition ${activeTab === 'rooms' ? 'scale-110 text-blue-400' : 'text-white/50'}`}>
+            <Globe size={28} strokeWidth={activeTab === 'rooms' ? 3 : 2} />
+          </div>
+
+          <div onClick={() => setActiveTab('messages')} className={`cursor-pointer transition ${activeTab === 'messages' ? 'scale-110 text-white' : 'text-white/50'}`}>
+            <div className="relative">
+              <MessageCircle size={28} strokeWidth={activeTab === 'messages' ? 3 : 2} />
+              <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-black animate-pulse"></div>
+            </div>
+          </div>
+
+          <div onClick={() => setActiveTab('profile')} className={`cursor-pointer transition ${activeTab === 'profile' ? 'scale-110 border-white' : 'border-transparent text-white/50'}`}>
+            <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${activeTab === 'profile' ? 'border-white' : 'border-white/50'}`}>
+              <img src={userData?.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full object-cover" />
+            </div>
           </div>
         </div>
 
-        <div onClick={() => setActiveTab('profile')} className={`cursor-pointer transition ${activeTab === 'profile' ? 'scale-110 border-white' : 'border-transparent text-white/50'}`}>
-          <div className={`w-8 h-8 rounded-full overflow-hidden border-2 ${activeTab === 'profile' ? 'border-white' : 'border-white/50'}`}>
-            <img src={userData?.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} className="w-full h-full object-cover" />
+        {/* Onboarding Modal */}
+        {showOnboarding && !showIntro && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
+            <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
           </div>
-        </div>
+        )}
+
+        {/* Intro Modal (First Time User) */}
+        {showIntro && <IntroModal onClose={() => {
+          localStorage.setItem('vibe_intro_seen', 'true');
+          setShowIntro(false);
+          // If we haven't onboarded profile, show that next
+          if (!userData?.profile_pic) setShowOnboarding(true);
+        }} />}
       </div>
-
-      {/* Onboarding Modal */}
-      {showOnboarding && !showIntro && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4">
-          <EditProfileModal user={user} userData={userData} onClose={() => setShowOnboarding(false)} onUpdate={(data) => { onUpdate(data); setShowOnboarding(false); }} />
-        </div>
-      )}
-
-      {/* Intro Modal (First Time User) */}
-      {showIntro && <IntroModal onClose={() => {
-        localStorage.setItem('vibe_intro_seen', 'true');
-        setShowIntro(false);
-        // If we haven't onboarded profile, show that next
-        if (!userData?.profile_pic) setShowOnboarding(true);
-      }} />}
-    </div>
+    </CallProvider>
   );
 };
 

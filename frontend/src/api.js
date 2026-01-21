@@ -42,6 +42,7 @@ export const swipe = (userId, action) => api.post('/interactions/', { to_user: u
 export const getMatches = () => api.get('/interactions/matches/');
 export const uploadGalleryImage = (profileId, formData) => api.post(`/profiles/${profileId}/upload_gallery/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const getRooms = () => api.get('/rooms/');
+export const startChat = (targetUserId) => api.post('/rooms/start_chat/', { target_user_id: targetUserId });
 
 // Supports Private OR Public rooms
 export const getMessages = (roomId, isPublic = false) => {
