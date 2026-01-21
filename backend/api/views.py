@@ -12,9 +12,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 class AuthViewSet(viewsets.ViewSet):
     # ... (Keep existing methods: signup, login, me)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], authentication_classes=[], permission_classes=[permissions.AllowAny])
     def signup(self, request):
         import re
+        print(f"DEBUG: Signup request data: {request.data}")
         username = request.data.get('username')
         password = request.data.get('password')
         email = request.data.get('email')
