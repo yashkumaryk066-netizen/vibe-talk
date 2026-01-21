@@ -15,6 +15,10 @@ class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def signup(self, request):
         import re
+        username = request.data.get('username')
+        password = request.data.get('password')
+        email = request.data.get('email')
+
         if not username or not password or not email:
             return Response({'error': 'All fields are required'}, status=400)
 
