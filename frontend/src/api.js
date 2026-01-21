@@ -45,6 +45,8 @@ export const getRooms = () => api.get('/rooms/');
 export const startChat = (targetUserId) => api.post('/rooms/start_chat/', { target_user_id: targetUserId });
 export const getChatRoom = (roomId) => api.get(`/rooms/${roomId}/`); // Get Room Details (Permissions)
 export const togglePermission = (roomId, type, action) => api.post(`/rooms/${roomId}/toggle_permission/`, { type, action }); // allow/deny call/video/media
+export const uploadContent = (formData) => api.post('/content/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+
 
 
 // Supports Private OR Public rooms

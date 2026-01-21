@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db.models import Q, Case, When, Value, IntegerField
-from .models import Profile, UserInteraction, ChatRoom, Message, Block, Report, VoiceRoom, ProfileImage
+from .models import Profile, UserInteraction, ChatRoom, Message, Block, Report, VoiceRoom, ProfileImage, UserContent
 from .serializers import (UserSerializer, ProfileSerializer, UserInteractionSerializer, 
-                          ChatRoomSerializer, MessageSerializer, BlockSerializer, ReportSerializer, VoiceRoomSerializer)
+                          ChatRoomSerializer, MessageSerializer, BlockSerializer, ReportSerializer, VoiceRoomSerializer, UserContentSerializer)
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 class AuthViewSet(viewsets.ViewSet):
     # ... (Keep existing methods: signup, login, me)
@@ -440,3 +442,28 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(reporter=self.request.user)
+
+class UserContentViewSet(viewsets.ModelViewSet):
+    """
+    Handles Reels, Stories, and Posts
+    """
+    queryset = UserContent.objects.all()
+    serializer_class = UserContentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser) # Crucial for uploads
+
+    def get_queryset(self):
+        # Optional filter by content_type (e.g. ?type=story)
+        c_type = self.request.query_params.get('type')
+        user_id = self.request.query_params.get('user')
+        qs = self.queryset
+        if c_type: 
+            qs = qs.filter(content_type=c_type)
+        if user_id:
+            qs = qs.filter(user__id=user_id)
+        
+        return qs.order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+

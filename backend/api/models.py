@@ -94,3 +94,30 @@ class Report(models.Model):
     reported = models.ForeignKey(User, related_name='reports_received', on_delete=models.CASCADE)
     reason = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+class UserContent(models.Model):
+    """
+    Unified model for User Stories, Reels, and Feed Posts.
+    """
+    CONTENT_TYPES = (
+        ('story', 'Story (24h)'),
+        ('reel', 'Reel (Video)'),
+        ('post', 'Post (Image)'),
+    )
+    user = models.ForeignKey(User, related_name='content', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='user_content/')
+    thumbnail = models.ImageField(upload_to='content_thumbs/', null=True, blank=True)
+    caption = models.TextField(blank=True)
+    content_type = models.CharField(max_length=10, choices=CONTENT_TYPES, default='post')
+    
+    # Analytics
+    views = models.IntegerField(default=0)
+    likes = models.IntegerField(default=0)
+    
+    # E.g. for Stories
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.content_type}"
+

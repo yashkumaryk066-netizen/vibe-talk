@@ -1,6 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Profile, UserInteraction, ProfileImage, ChatRoom, Message, Block, Report, VoiceRoom
+from .models import Profile, UserInteraction, ProfileImage, ChatRoom, Message, Block, Report, VoiceRoom, UserContent
+
+# ... (Previous imports identical)
+
+class UserContentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    user_pic = serializers.CharField(source='user.profile.profile_pic', read_only=True) # Hacky but useful for feed
+    
+    class Meta:
+        model = UserContent
+        fields = ['id', 'user', 'username', 'user_pic', 'file', 'thumbnail', 'caption', 'content_type', 'views', 'likes', 'created_at']
+        read_only_fields = ['user', 'views', 'likes']
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

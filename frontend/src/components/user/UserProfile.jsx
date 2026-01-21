@@ -36,6 +36,27 @@ const UserProfile = ({ user, isOwnProfile = false, onEdit, onLogout }) => {
         }
     };
 
+    const handleUpload = async (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('content_type', type);
+
+        const toastId = toast.loading(`Uploading ${type}...`);
+
+        try {
+            await api.uploadContent(formData);
+            toast.success(`${type === 'story' ? 'Story' : type === 'reel' ? 'Reel' : 'Post'} Uploaded! 🎉`, { id: toastId });
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        } catch (err) {
+            console.error(err);
+            toast.error("Upload failed.", { id: toastId });
+        }
+    };
+
+
     return (
         <div className="bg-black min-h-screen text-white pb-24 relative overflow-x-hidden md:max-w-md md:mx-auto md:border-r md:border-l md:border-white/10">
 
@@ -75,25 +96,30 @@ const UserProfile = ({ user, isOwnProfile = false, onEdit, onLogout }) => {
             {/* 🚀 Content Body */}
             <div className="px-5 -mt-6 relative z-10 space-y-6">
 
-                {/* 🆕 Create / Upload Actions (Premium Fixed) */}
+                {/* 🆕 Create / Upload Actions (Premium Functional) */}
                 {isOwnProfile && (
                     <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-white/10 shadow-lg mb-4">
+                        {/* Hidden Inputs */}
+                        <input type="file" ref={props.storyInputRef || useRef(null)} className="hidden" accept="image/*,video/*" onChange={(e) => handleUpload(e, 'story')} />
+                        <input type="file" ref={props.reelInputRef || useRef(null)} className="hidden" accept="video/*" onChange={(e) => handleUpload(e, 'reel')} />
+                        <input type="file" ref={props.galleryInputRef || useRef(null)} className="hidden" accept="image/*" onChange={(e) => handleUpload(e, 'post')} />
+
                         <div className="flex justify-between items-center gap-2">
-                            <button onClick={() => { toast.success("Opening Camera for Story... 📸"); confetti({ spread: 60, origin: { y: 0.8 } }); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-pink-500/50 transition group">
+                            <button onClick={() => document.querySelectorAll('input[type=file]')[0].click()} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-pink-500/50 transition group">
                                 <div className="p-2.5 rounded-full bg-gradient-to-tr from-pink-500 to-red-500 text-white shadow-lg shadow-pink-500/20 group-hover:scale-110 transition">
                                     <Camera size={20} />
                                 </div>
                                 <span className="text-[10px] font-bold text-white/80">Add Story</span>
                             </button>
 
-                            <button onClick={() => { toast.success("Select Reel to Upload! 🎬"); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-blue-500/50 transition group">
+                            <button onClick={() => document.querySelectorAll('input[type=file]')[1].click()} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-blue-500/50 transition group">
                                 <div className="p-2.5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/20 group-hover:scale-110 transition">
                                     <Play size={20} fill="currentColor" />
                                 </div>
                                 <span className="text-[10px] font-bold text-white/80">Post Reel</span>
                             </button>
 
-                            <button onClick={() => { toast.success("Gallery Opened! 🖼️"); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-green-500/50 transition group">
+                            <button onClick={() => document.querySelectorAll('input[type=file]')[2].click()} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-green-500/50 transition group">
                                 <div className="p-2.5 rounded-full bg-gradient-to-tr from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/20 group-hover:scale-110 transition">
                                     <ImageIcon size={20} />
                                 </div>
