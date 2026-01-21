@@ -3,6 +3,9 @@ import React, { useState, useRef } from 'react';
 import { Play, Pause, MapPin, Briefcase, GraduationCap, Instagram, Mic, Edit3, Image as ImageIcon, Camera, ChevronLeft, Settings, Shield, Star, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../api';
+import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
+
 
 // Premium Profile Component
 const UserProfile = ({ user, isOwnProfile = false, onEdit, onLogout }) => {
@@ -71,6 +74,34 @@ const UserProfile = ({ user, isOwnProfile = false, onEdit, onLogout }) => {
 
             {/* 🚀 Content Body */}
             <div className="px-5 -mt-6 relative z-10 space-y-6">
+
+                {/* 🆕 Create / Upload Actions (Premium Fixed) */}
+                {isOwnProfile && (
+                    <div className="bg-[#1a1a1a] rounded-2xl p-4 border border-white/10 shadow-lg mb-4">
+                        <div className="flex justify-between items-center gap-2">
+                            <button onClick={() => { toast.success("Opening Camera for Story... 📸"); confetti({ spread: 60, origin: { y: 0.8 } }); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-pink-500/50 transition group">
+                                <div className="p-2.5 rounded-full bg-gradient-to-tr from-pink-500 to-red-500 text-white shadow-lg shadow-pink-500/20 group-hover:scale-110 transition">
+                                    <Camera size={20} />
+                                </div>
+                                <span className="text-[10px] font-bold text-white/80">Add Story</span>
+                            </button>
+
+                            <button onClick={() => { toast.success("Select Reel to Upload! 🎬"); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-blue-500/50 transition group">
+                                <div className="p-2.5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/20 group-hover:scale-110 transition">
+                                    <Play size={20} fill="currentColor" />
+                                </div>
+                                <span className="text-[10px] font-bold text-white/80">Post Reel</span>
+                            </button>
+
+                            <button onClick={() => { toast.success("Gallery Opened! 🖼️"); }} className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gradient-to-br from-[#262626] to-black border border-white/5 hover:border-green-500/50 transition group">
+                                <div className="p-2.5 rounded-full bg-gradient-to-tr from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/20 group-hover:scale-110 transition">
+                                    <ImageIcon size={20} />
+                                </div>
+                                <span className="text-[10px] font-bold text-white/80">Upload</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Voice Bio (Premium Feature) */}
                 {userData.voice_bio && (
