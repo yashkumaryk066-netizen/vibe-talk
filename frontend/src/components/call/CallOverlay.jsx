@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useCall } from '../context/CallContext';
+import { useCall } from '../../context/CallContext';
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
 const CallOverlay = () => {
