@@ -1120,48 +1120,7 @@ const MessagesList = ({ navigate, activeUser }) => {
   );
 };
 
-// --- Re-using existing Swipe Logic for 'Search' tab ---
-const Discover = ({ user, userData }) => {
-  const [profiles, setProfiles] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [matchFound, setMatchFound] = useState(null);
 
-  useEffect(() => {
-    api.getProfiles().then(res => setProfiles(res.data.filter(p => p.username !== user.username))).catch(console.error);
-  }, []);
-
-  const handleSwipe = async (userId, action) => {
-    // Existing swipe logic simplified for brevity in this view
-    if (action === 'like') {
-      const res = await api.swipe(userId, 'like');
-      if (res.data.match) {
-        toast.success("It's a Match! 🔥");
-      }
-    }
-    setCurrentIndex(prev => prev + 1);
-  };
-
-  if (currentIndex >= profiles.length) return <div className="screen center-content"><h2>No more vibes.</h2></div>;
-  const p = profiles[currentIndex];
-  // Fallback if images missing (handled by backend now, but safe check)
-  const imgUrl = p.profile_pic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`;
-
-  return (
-    <div className="screen pb-20 pt-4 relative overflow-hidden bg-black">
-      <div className="swipe-card mx-auto mt-4 w-[90%] h-[70vh] rounded-3xl overflow-hidden relative shadow-2xl border border-white/10 bg-gray-900">
-        <img src={imgUrl} className="w-full h-full object-cover" />
-        <div className="absolutebottom-0 left-0 w-full bg-gradient-to-t from-black via-black/50 to-transparent p-6 pt-20 flex flex-col justify-end h-full">
-          <h2 className="text-3xl font-bold flex items-center gap-2">{p.name}, {p.age} <span className="bg-blue-500 text-[10px] p-1 rounded-full"><Check size={8} /></span></h2>
-          <p className="opacity-80 mb-4">{p.bio || "Just vibing."}</p>
-          <div className="flex gap-4 mt-2">
-            <button onClick={() => handleSwipe(p.user, 'pass')} className="w-14 h-14 rounded-full border-2 border-red-500 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition"><X size={30} /></button>
-            <button onClick={() => handleSwipe(p.user, 'like')} className="w-14 h-14 rounded-full border-2 border-green-500 flex items-center justify-center text-green-500 hover:bg-green-500 hover:text-white transition"><Heart size={30} /></button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const ProfileView = ({ user, onLogout, isOwnProfile = true }) => {
   const navigate = useNavigate();
