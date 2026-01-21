@@ -6,6 +6,14 @@ import confetti from 'canvas-confetti';
 import * as api from './api';
 import AdvancedSearch from './components/AdvancedSearch';
 
+// Legal Pages
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import AboutUs from './pages/AboutUs';
+import SafetyGuidelines from './pages/SafetyGuidelines';
+import ContactUs from './pages/ContactUs';
+
+
 // Utility to decode JWT for Google Auth
 const parseJwt = (token) => {
   try {
@@ -508,6 +516,31 @@ const Login = ({ onSuccess }) => {
               {isSignup ? "Already have an account? " : "Don't have an account? "}
               <span className="text-cyan-400 font-bold hover:underline">{isSignup ? "Sign In" : "Sign Up"}</span>
             </button>
+          </div>
+
+          {/* Legal Pages Footer */}
+          <div className="mt-6 text-center">
+            <div className="flex flex-wrap justify-center gap-3 text-xs">
+              <Link to="/terms" className="text-white/50 hover:text-white transition">
+                Terms
+              </Link>
+              <span className="text-white/20">•</span>
+              <Link to="/privacy-policy" className="text-white/50 hover:text-white transition">
+                Privacy
+              </Link>
+              <span className="text-white/20">•</span>
+              <Link to="/about" className="text-white/50 hover:text-white transition">
+                About
+              </Link>
+              <span className="text-white/20">•</span>
+              <Link to="/safety" className="text-white/50 hover:text-white transition">
+                Safety
+              </Link>
+              <span className="text-white/20">•</span>
+              <Link to="/contact" className="text-white/50 hover:text-white transition">
+                Contact
+              </Link>
+            </div>
           </div>
 
           {/* 🌟 SEO: Developer Footer for Image Ranking 🌟 */}
@@ -2204,6 +2237,14 @@ const App = () => {
       <Toaster position="top-center" toastOptions={{ style: { background: '#1a1a2e', color: '#fff', border: '1px solid #333' } }} />
       <Router>
         <Routes>
+          {/* Legal Pages - Accessible without login */}
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/safety" element={<SafetyGuidelines />} />
+          <Route path="/contact" element={<ContactUs />} />
+
+          {/* Default login page */}
           <Route path="*" element={<Login onSuccess={checkAuth} />} />
         </Routes>
       </Router>
