@@ -411,13 +411,8 @@ const ChatWindow = ({ user, isPublic = false }) => {
                                 )}
 
                                 {(msg.audio_url || msg.voice_file) && (
-                                    <div className="flex items-center gap-3 mt-1 min-w-[120px]">
-                                        <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition">
-                                            <Play size={14} fill="white" />{/* TODO: Implement Play Logic */}
-                                        </div>
-                                        <div className="h-8 flex items-center gap-0.5">
-                                            {[...Array(10)].map((_, j) => <div key={j} className="w-1 bg-white/40 rounded-full" style={{ height: Math.random() * 15 + 5 + 'px' }}></div>)}
-                                        </div>
+                                    <div className="mt-2 min-w-[200px]">
+                                        <audio controls src={msg.audio_url || msg.voice_file} className="w-full h-8 opacity-90 rounded-full" />
                                     </div>
                                 )}
 
